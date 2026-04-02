@@ -1,5 +1,7 @@
 flask
+gunicorn
 groq
 requests
 python-dotenv
 pypdf
+yfinance

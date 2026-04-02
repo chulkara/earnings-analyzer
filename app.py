@@ -226,5 +226,6 @@ def price(ticker, filing_date):
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5001))
-    print(f"Starting Earnings Analyzer → http://localhost:{port}\n")
-    app.run(debug=True, threaded=True, use_reloader=False, port=port)
+    debug = os.getenv("FLASK_ENV") != "production"
+    print(f"Starting Earnings Analyzer → http://0.0.0.0:{port}\n")
+    app.run(host="0.0.0.0", port=port, debug=debug, threaded=True, use_reloader=False)
