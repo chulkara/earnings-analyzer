@@ -1,0 +1,5 @@
+flask
+groq
+requests
+python-dotenv
+pypdf
