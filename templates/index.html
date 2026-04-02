@@ -5,92 +5,114 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EarningsAI — SEC Filing Intelligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <style>
-    /* ── Tokens ───────────────────────────────────────────── */
+    /* ── Design tokens ───────────────────────────────────────── */
     :root {
-      --bg-base:    #07090f;
-      --bg-surface: #0d1120;
-      --bg-card:    #111827;
-      --bg-hover:   #161f32;
-      --border:     #1c2b42;
-      --border-lit: #263d5c;
+      --bg:       #0a0a0a;
+      --surface:  #111111;
+      --card:     #141414;
+      --card-2:   #181818;
+      --border:   rgba(255,255,255,0.07);
+      --border-2: rgba(255,255,255,0.12);
+      --text:     #f0f0f0;
+      --text-2:   #888888;
+      --text-3:   #444444;
+      --accent:   #e84033;
+      --accent-2: #ff6b5b;
+      --green:    #22c55e;
+      --amber:    #f59e0b;
+      --red:      #ef4444;
+      --blue:     #3b82f6;
 
-      --txt-1: #e8edf5;
-      --txt-2: #8c9db5;
-      --txt-3: #4a607a;
-
-      --blue:   #3b82f6;
-      --green:  #10b981;
-      --red:    #ef4444;
-      --amber:  #f59e0b;
-      --purple: #8b5cf6;
-
-      --radius: 10px;
-      --radius-lg: 14px;
+      --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --radius:    8px;
+      --radius-lg: 12px;
     }
 
-    /* ── Reset ────────────────────────────────────────────── */
+    /* ── Reset ───────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg-base);
-      color: var(--txt-1);
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       font-size: 14px;
       line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Nav ──────────────────────────────────────────────── */
+    /* ── Nav ─────────────────────────────────────────────────── */
     nav {
-      position: sticky;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 100;
-      background: rgba(7, 9, 15, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
+      height: 60px;
       display: flex;
       align-items: center;
-      gap: 1.5rem;
-      padding: 0 1.5rem;
-      height: 56px;
+      padding: 0 2rem;
+      gap: 2rem;
+      border-bottom: 1px solid transparent;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    body.has-results nav {
+      background: rgba(10,10,10,0.95);
+      backdrop-filter: blur(16px);
+      border-bottom-color: var(--border);
     }
 
     .nav-logo {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--txt-1);
-      letter-spacing: -0.3px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.3rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text);
       white-space: nowrap;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.2rem;
     }
 
-    .nav-logo .dot { color: var(--blue); }
+    .nav-logo .accent { color: var(--accent); }
 
     .nav-search {
       flex: 1;
-      max-width: 380px;
+      max-width: 360px;
       display: flex;
       gap: 0.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    body.has-results .nav-search {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
     }
 
     .nav-search input {
       flex: 1;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
+      background: var(--card);
+      border: 1px solid var(--border-2);
       border-radius: var(--radius);
-      color: var(--txt-1);
-      font-family: inherit;
-      font-size: 0.875rem;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.8rem;
       font-weight: 600;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      padding: 0.45rem 0.75rem;
+      padding: 0.4rem 0.75rem;
       outline: none;
       transition: border-color 0.15s;
     }
@@ -99,20 +121,22 @@
       text-transform: none;
       font-weight: 400;
       letter-spacing: 0;
-      color: var(--txt-3);
+      color: var(--text-3);
     }
 
-    .nav-search input:focus { border-color: var(--blue); }
+    .nav-search input:focus { border-color: var(--accent); }
 
     .nav-search button {
-      background: var(--blue);
+      background: var(--accent);
       color: #fff;
       border: none;
       border-radius: var(--radius);
-      padding: 0.45rem 1.1rem;
-      font-family: inherit;
-      font-size: 0.8rem;
-      font-weight: 600;
+      padding: 0.4rem 1rem;
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
       cursor: pointer;
       transition: opacity 0.15s, transform 0.1s;
       white-space: nowrap;
@@ -120,23 +144,34 @@
 
     .nav-search button:hover   { opacity: 0.88; }
     .nav-search button:active  { transform: scale(0.97); }
-    .nav-search button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .nav-search button:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    .nav-tagline {
-      font-size: 0.75rem;
-      color: var(--txt-3);
+    .nav-back {
       margin-left: auto;
+      font-size: 0.75rem;
+      color: var(--text-2);
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s, color 0.15s;
       white-space: nowrap;
+      background: none;
+      border: none;
+      font-family: var(--font-body);
+      padding: 0;
     }
 
-    /* ── Loading overlay ──────────────────────────────────── */
+    .nav-back:hover { color: var(--text); }
+    body.has-results .nav-back { opacity: 1; pointer-events: all; }
+
+    /* ── Loading overlay ─────────────────────────────────────── */
     #loadingOverlay {
       display: none;
       position: fixed;
       inset: 0;
       z-index: 200;
-      background: rgba(7, 9, 15, 0.92);
-      backdrop-filter: blur(6px);
+      background: rgba(10,10,10,0.93);
+      backdrop-filter: blur(8px);
       justify-content: center;
       align-items: center;
     }
@@ -144,28 +179,31 @@
     #loadingOverlay.active { display: flex; }
 
     .loading-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
+      background: var(--card);
+      border: 1px solid var(--border-2);
       border-radius: var(--radius-lg);
       padding: 2.5rem 3rem;
-      width: 420px;
+      width: 440px;
       max-width: 90vw;
     }
 
     .loading-card .l-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 0.3rem;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
     }
 
     .loading-card .l-sub {
-      font-size: 0.8rem;
-      color: var(--txt-2);
+      font-size: 0.78rem;
+      color: var(--text-2);
       margin-bottom: 1.75rem;
     }
 
     .progress-bar-wrap {
-      height: 3px;
+      height: 2px;
       background: var(--border);
       border-radius: 100px;
       overflow: hidden;
@@ -174,24 +212,24 @@
 
     .progress-bar-fill {
       height: 100%;
-      background: var(--blue);
+      background: var(--accent);
       border-radius: 100px;
       width: 0%;
       transition: width 0.4s ease;
     }
 
-    .progress-steps { display: flex; flex-direction: column; gap: 0.6rem; }
+    .progress-steps { display: flex; flex-direction: column; gap: 0.55rem; }
 
     .progress-step {
       display: flex;
       align-items: center;
       gap: 0.6rem;
-      font-size: 0.8rem;
-      color: var(--txt-3);
+      font-size: 0.78rem;
+      color: var(--text-3);
       transition: color 0.2s;
     }
 
-    .progress-step.active { color: var(--txt-1); }
+    .progress-step.active { color: var(--text); }
     .progress-step.done   { color: var(--green); }
 
     .step-icon {
@@ -205,77 +243,248 @@
     }
 
     .step-icon.spinner-sm {
-      border: 2px solid var(--border);
-      border-top-color: var(--blue);
+      border: 2px solid var(--border-2);
+      border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Empty / landing state ────────────────────────────── */
+    /* ── Hero / Landing ──────────────────────────────────────── */
     #emptyState {
+      display: block;
+      min-height: 100vh;
+      padding-top: 60px;
+    }
+
+    body.has-results #emptyState { display: none; }
+
+    .hero-section {
+      min-height: calc(100vh - 60px);
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      min-height: calc(100vh - 56px);
-      padding: 3rem 1.5rem;
-      text-align: center;
+      padding: 4rem 2rem 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
-    .hero-icon {
-      font-size: 3.5rem;
-      margin-bottom: 1.5rem;
-      filter: drop-shadow(0 0 30px rgba(59,130,246,0.3));
+    .hero-content {
+      max-width: 680px;
     }
 
-    .hero h1 {
-      font-size: 2.5rem;
+    .hero-eyebrow {
+      font-size: 0.7rem;
       font-weight: 700;
-      letter-spacing: -1px;
-      background: linear-gradient(135deg, #e8edf5 30%, #3b82f6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
-    .hero p {
-      color: var(--txt-2);
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .hero-headline {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(3.5rem, 8vw, 6rem);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 1.75rem;
+    }
+
+    .hero-headline .line-2 {
+      color: var(--accent);
+    }
+
+    .hero-sub {
       font-size: 1rem;
+      color: var(--text-2);
+      line-height: 1.7;
       margin-bottom: 2.5rem;
+      max-width: 480px;
+      font-weight: 300;
     }
 
-    .example-grid {
+    .hero-search-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      max-width: 480px;
+    }
+
+    .hero-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border-2);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.75rem 1rem;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .hero-input::placeholder {
+      text-transform: none;
+      font-weight: 400;
+      letter-spacing: 0;
+      color: var(--text-3);
+    }
+
+    .hero-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(232,64,51,0.12);
+    }
+
+    .hero-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 0.75rem 1.75rem;
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .hero-btn:hover  { background: var(--accent-2); }
+    .hero-btn:active { transform: scale(0.97); }
+
+    .hero-chips {
       display: flex;
       gap: 0.5rem;
       flex-wrap: wrap;
-      justify-content: center;
     }
 
-    .example-chip {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 0.35rem 0.9rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--txt-2);
+    .hero-chip {
+      background: transparent;
+      border: 1px solid var(--border-2);
+      border-radius: 4px;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-2);
       cursor: pointer;
-      transition: border-color 0.15s, color 0.15s;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
     }
 
-    .example-chip:hover { border-color: var(--blue); color: var(--blue); }
+    .hero-chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(232,64,51,0.06);
+    }
 
-    /* ── Dashboard ────────────────────────────────────────── */
+    /* ── Feature grid ────────────────────────────────────────── */
+    .features-section {
+      border-top: 1px solid var(--border);
+      padding: 0;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-left: 1px solid var(--border);
+    }
+
+    @media (max-width: 900px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 500px) {
+      .features-grid { grid-template-columns: 1fr; }
+    }
+
+    .feature-cell {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+    }
+
+    .feature-num {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 1.25rem;
+    }
+
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      opacity: 0.7;
+    }
+
+    .feature-title {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+      line-height: 1.15;
+    }
+
+    .feature-desc {
+      font-size: 0.8rem;
+      color: var(--text-2);
+      line-height: 1.65;
+      font-weight: 300;
+    }
+
+    /* ── Dashboard ───────────────────────────────────────────── */
     #dashboard { display: none; }
-    #dashboard.active { display: block; }
+    body.has-results #dashboard { display: block; }
 
     .dash-wrap {
-      max-width: 1100px;
+      max-width: 1140px;
       margin: 0 auto;
-      padding: 1.5rem 1.5rem 4rem;
+      padding: 2rem 2rem 5rem;
+      padding-top: calc(60px + 2rem);
+    }
+
+    /* Divider label */
+    .section-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
     }
 
     /* Company header */
@@ -284,83 +493,93 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 1rem;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.75rem;
       flex-wrap: wrap;
     }
 
     .co-name {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 2.25rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 1;
+      margin-bottom: 0.6rem;
     }
 
     .co-meta {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-top: 0.35rem;
       flex-wrap: wrap;
     }
 
     .tag {
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      padding: 0.2rem 0.65rem;
-      border-radius: 6px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
+      padding: 0.18rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
+      border: 1px solid;
     }
 
-    .tag-blue   { background: rgba(59,130,246,0.12); color: var(--blue);   border: 1px solid rgba(59,130,246,0.25); }
-    .tag-muted  { background: rgba(140,157,181,0.1); color: var(--txt-2);  border: 1px solid var(--border); }
+    .tag-accent { background: rgba(232,64,51,0.1); color: var(--accent);  border-color: rgba(232,64,51,0.25); }
+    .tag-muted  { background: rgba(255,255,255,0.04); color: var(--text-2); border-color: var(--border-2); }
 
     .sentiment-pill {
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
       padding: 0.4rem 1rem;
-      border-radius: 100px;
-      font-size: 0.85rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
       font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid;
     }
 
-    .pill-positive { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
-    .pill-neutral  { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
-    .pill-negative { background: rgba(239,68,68,0.15);  color: var(--red);   border: 1px solid rgba(239,68,68,0.3); }
+    .pill-positive { background: rgba(34,197,94,0.1);  color: var(--green); border-color: rgba(34,197,94,0.25); }
+    .pill-neutral  { background: rgba(245,158,11,0.1); color: var(--amber); border-color: rgba(245,158,11,0.25); }
+    .pill-negative { background: rgba(239,68,68,0.1);  color: var(--red);   border-color: rgba(239,68,68,0.25); }
 
     /* Metric row */
     .metrics-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0.75rem;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
       margin-bottom: 1.25rem;
     }
 
     @media (max-width: 700px) { .metrics-row { grid-template-columns: repeat(2, 1fr); } }
 
     .metric-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1rem 1.1rem;
+      background: var(--card);
+      padding: 1.25rem 1.4rem;
     }
 
     .metric-label {
-      font-size: 0.68rem;
-      font-weight: 600;
+      font-size: 0.6rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--txt-3);
-      margin-bottom: 0.4rem;
+      letter-spacing: 0.12em;
+      color: var(--text-3);
+      margin-bottom: 0.5rem;
     }
 
     .metric-value {
-      font-size: 1.4rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.8rem;
+      letter-spacing: 0.02em;
+      line-height: 1;
     }
 
     .metric-value.positive { color: var(--green); }
@@ -368,48 +587,50 @@
     .metric-value.negative { color: var(--red); }
 
     .metric-sub {
-      font-size: 0.72rem;
-      color: var(--txt-3);
-      margin-top: 0.15rem;
+      font-size: 0.68rem;
+      color: var(--text-3);
+      margin-top: 0.35rem;
     }
 
     /* Charts row */
     .charts-row {
       display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 0.75rem;
+      grid-template-columns: 320px 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
       margin-bottom: 1.25rem;
     }
 
     @media (max-width: 800px) { .charts-row { grid-template-columns: 1fr; } }
 
     .chart-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
+      background: var(--card);
       padding: 1.25rem 1.25rem 1rem;
     }
 
     .card-title {
-      font-size: 0.7rem;
+      font-size: 0.6rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--txt-3);
+      letter-spacing: 0.12em;
+      color: var(--text-3);
       margin-bottom: 1rem;
     }
 
     /* Gauge */
     .gauge-canvas-wrap {
       position: relative;
-      height: 160px;
+      height: 150px;
     }
 
     .gauge-canvas-wrap canvas { display: block; }
 
     .gauge-center-text {
       position: absolute;
-      bottom: 14px;
+      bottom: 10px;
       left: 50%;
       transform: translateX(-50%);
       text-align: center;
@@ -417,39 +638,40 @@
     }
 
     .gauge-score-num {
-      font-size: 1.6rem;
-      font-weight: 700;
-      letter-spacing: -1px;
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
       line-height: 1;
     }
 
     .gauge-score-lbl {
-      font-size: 0.65rem;
-      color: var(--txt-3);
+      font-size: 0.6rem;
+      color: var(--text-3);
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-top: 2px;
+      letter-spacing: 0.1em;
+      margin-top: 3px;
     }
 
     .gauge-axis {
       display: flex;
       justify-content: space-between;
       padding: 0 0.5rem;
-      margin-top: 0.25rem;
+      margin-top: 0.3rem;
     }
 
     .gauge-axis span {
-      font-size: 0.65rem;
-      color: var(--txt-3);
+      font-size: 0.6rem;
+      color: var(--text-3);
       font-weight: 500;
     }
 
     /* History chart */
-    .history-canvas-wrap { height: 200px; position: relative; }
+    .history-canvas-wrap { height: 185px; position: relative; }
 
     /* Generic card */
     .card {
-      background: var(--bg-card);
+      background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 1.25rem 1.5rem;
@@ -457,50 +679,50 @@
     }
 
     .card p {
-      font-size: 0.9rem;
-      color: var(--txt-2);
-      line-height: 1.7;
+      font-size: 0.875rem;
+      color: var(--text-2);
+      line-height: 1.75;
+      font-weight: 300;
     }
 
     /* Themes grid */
-    .section-header {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--txt-3);
-      margin-bottom: 0.75rem;
-    }
-
     .themes-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-      gap: 0.75rem;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
       margin-bottom: 1.25rem;
     }
 
     .theme-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--border);
-      border-radius: var(--radius);
-      padding: 0.9rem 1rem;
+      background: var(--card);
+      padding: 1rem 1.1rem;
+      border-left: 2px solid transparent;
       transition: background 0.15s;
     }
 
-    .theme-card:hover { background: var(--bg-hover); }
+    .theme-card:hover { background: var(--card-2); }
     .theme-card.positive { border-left-color: var(--green); }
     .theme-card.neutral  { border-left-color: var(--amber); }
     .theme-card.negative { border-left-color: var(--red);   }
 
-    .theme-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; }
-    .theme-desc  { font-size: 0.78rem; color: var(--txt-2); line-height: 1.5; }
+    .theme-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      color: var(--text);
+    }
+
+    .theme-desc  { font-size: 0.75rem; color: var(--text-2); line-height: 1.55; font-weight: 300; }
 
     /* Two column */
     .two-col {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
+      gap: 1.25rem;
       margin-bottom: 1.25rem;
     }
 
@@ -515,19 +737,20 @@
       align-items: flex-start;
       padding: 0.55rem 0;
       border-bottom: 1px solid var(--border);
-      font-size: 0.85rem;
-      color: var(--txt-2);
-      line-height: 1.5;
+      font-size: 0.825rem;
+      color: var(--text-2);
+      line-height: 1.55;
+      font-weight: 300;
     }
 
     .item-list li:last-child { border-bottom: none; }
 
     .bullet {
       flex-shrink: 0;
-      width: 5px;
-      height: 5px;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
-      margin-top: 0.55em;
+      margin-top: 0.6em;
     }
 
     .bullet-green  { background: var(--green); }
@@ -536,21 +759,22 @@
 
     /* Quotes */
     blockquote {
-      border-left: 2px solid var(--blue);
+      border-left: 2px solid var(--accent);
       padding: 0.4rem 0 0.4rem 0.9rem;
       margin: 0.6rem 0;
       font-style: italic;
-      font-size: 0.85rem;
-      color: var(--txt-2);
-      line-height: 1.6;
+      font-size: 0.825rem;
+      color: var(--text-2);
+      line-height: 1.65;
+      font-weight: 300;
     }
 
     blockquote:first-child { margin-top: 0; }
     blockquote:last-child  { margin-bottom: 0; }
 
-    /* ── Price reaction ──────────────────────────────────── */
+    /* ── Price reaction ──────────────────────────────────────── */
     .price-reaction-card {
-      background: var(--bg-card);
+      background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 1.25rem 1.5rem;
@@ -560,32 +784,36 @@
     .price-stats-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
       margin-bottom: 1.25rem;
     }
 
     @media (max-width: 500px) { .price-stats-row { grid-template-columns: 1fr; } }
 
     .price-stat {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+      background: var(--card-2);
       padding: 0.85rem 1rem;
     }
 
     .price-stat-label {
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--txt-3);
-      margin-bottom: 0.35rem;
+      letter-spacing: 0.12em;
+      color: var(--text-3);
+      margin-bottom: 0.4rem;
     }
 
     .price-stat-value {
-      font-size: 1.3rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      line-height: 1;
     }
 
     .price-chart-wrap {
@@ -598,33 +826,29 @@
       align-items: center;
       justify-content: center;
       height: 80px;
-      font-size: 0.8rem;
-      color: var(--txt-3);
+      font-size: 0.78rem;
+      color: var(--text-3);
     }
 
-    /* ── Trades tables ────────────────────────────────────── */
-    .trades-section {
-      margin-bottom: 1.25rem;
-    }
+    /* ── Trades tables ───────────────────────────────────────── */
+    .trades-section { margin-bottom: 1.25rem; }
 
-    .trades-table-wrap {
-      overflow-x: auto;
-    }
+    .trades-table-wrap { overflow-x: auto; }
 
     .trades-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
     }
 
     .trades-table thead th {
       text-align: left;
       padding: 0.55rem 0.9rem;
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--txt-3);
+      letter-spacing: 0.1em;
+      color: var(--text-3);
       border-bottom: 1px solid var(--border);
       white-space: nowrap;
     }
@@ -635,48 +859,49 @@
     }
 
     .trades-table tbody tr:last-child { border-bottom: none; }
-    .trades-table tbody tr:hover { background: var(--bg-hover); }
+    .trades-table tbody tr:hover { background: rgba(255,255,255,0.02); }
 
     .trades-table tbody td {
       padding: 0.6rem 0.9rem;
-      color: var(--txt-2);
+      color: var(--text-2);
       vertical-align: middle;
       white-space: nowrap;
+      font-weight: 300;
     }
 
-    .trade-type-buy  { color: var(--green); font-weight: 600; }
-    .trade-type-sell { color: var(--red);   font-weight: 600; }
-    .trade-type-other { color: var(--txt-2); }
+    .trade-type-buy   { color: var(--green); font-weight: 600; }
+    .trade-type-sell  { color: var(--red);   font-weight: 600; }
+    .trade-type-other { color: var(--text-2); }
 
     .trades-empty {
       padding: 1.5rem;
       text-align: center;
-      font-size: 0.8rem;
-      color: var(--txt-3);
+      font-size: 0.78rem;
+      color: var(--text-3);
     }
 
     .trades-loading {
       padding: 1.5rem;
       text-align: center;
-      font-size: 0.8rem;
-      color: var(--txt-3);
+      font-size: 0.78rem;
+      color: var(--text-3);
     }
 
-    /* Error toast */
+    /* ── Error toast ─────────────────────────────────────────── */
     #errorToast {
       display: none;
       position: fixed;
       bottom: 1.5rem;
       right: 1.5rem;
       z-index: 300;
-      background: #1f0f0f;
-      border: 1px solid rgba(239,68,68,0.4);
+      background: #1a0a0a;
+      border: 1px solid rgba(239,68,68,0.35);
       border-radius: var(--radius);
       padding: 0.9rem 1.25rem;
       max-width: 380px;
-      font-size: 0.85rem;
+      font-size: 0.83rem;
       color: #fca5a5;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
     }
 
     #errorToast.active { display: block; }
@@ -684,17 +909,17 @@
 </head>
 <body>
 
-<!-- ── Nav ──────────────────────────────────────────────────────────────── -->
+<!-- ── Nav ───────────────────────────────────────────────────────────────── -->
 <nav>
   <div class="nav-logo">
-    <span>◈</span> Earnings<span class="dot">AI</span>
+    Earnings<span class="accent">AI</span>
   </div>
 
   <div class="nav-search">
     <input
       id="tickerInput"
       type="text"
-      placeholder="Search ticker (AAPL, MSFT...)"
+      placeholder="Search ticker..."
       maxlength="10"
       autocomplete="off"
       spellcheck="false"
@@ -702,10 +927,10 @@
     <button id="analyzeBtn" onclick="startAnalysis()">Analyze</button>
   </div>
 
-  <div class="nav-tagline">SEC EDGAR · AI-powered</div>
+  <button class="nav-back" onclick="backToHome()">← New search</button>
 </nav>
 
-<!-- ── Loading overlay ──────────────────────────────────────────────────── -->
+<!-- ── Loading overlay ───────────────────────────────────────────────────── -->
 <div id="loadingOverlay">
   <div class="loading-card">
     <div class="l-title" id="l-ticker">Analyzing...</div>
@@ -717,27 +942,85 @@
   </div>
 </div>
 
-<!-- ── Error toast ───────────────────────────────────────────────────────── -->
+<!-- ── Error toast ────────────────────────────────────────────────────────── -->
 <div id="errorToast"></div>
 
-<!-- ── Empty state ───────────────────────────────────────────────────────── -->
+<!-- ── Landing / Empty state ─────────────────────────────────────────────── -->
 <div id="emptyState">
-  <div class="hero-icon">◈</div>
-  <div class="hero">
-    <h1>Earnings Intelligence</h1>
-    <p>AI analysis of SEC filings — sentiment, themes, guidance, and risks</p>
-  </div>
-  <div class="example-grid">
-    <div class="example-chip" onclick="quickSearch('AAPL')">AAPL</div>
-    <div class="example-chip" onclick="quickSearch('MSFT')">MSFT</div>
-    <div class="example-chip" onclick="quickSearch('NVDA')">NVDA</div>
-    <div class="example-chip" onclick="quickSearch('META')">META</div>
-    <div class="example-chip" onclick="quickSearch('TSLA')">TSLA</div>
-    <div class="example-chip" onclick="quickSearch('GOOGL')">GOOGL</div>
-  </div>
-</div>
 
-<!-- ── Dashboard ─────────────────────────────────────────────────────────── -->
+  <!-- Hero -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <div class="hero-eyebrow">SEC Filing Intelligence</div>
+
+      <h1 class="hero-headline">
+        Earnings<br>
+        <span class="line-2">Intelligence.</span><br>
+        Powered by AI.
+      </h1>
+
+      <p class="hero-sub">
+        Instant AI analysis of SEC filings — sentiment, key themes,
+        management tone, forward guidance, insider trades, and stock price reaction.
+      </p>
+
+      <div class="hero-search-row">
+        <input
+          class="hero-input"
+          id="heroInput"
+          type="text"
+          placeholder="Enter ticker symbol..."
+          maxlength="10"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button class="hero-btn" onclick="heroSearch()">Analyze</button>
+      </div>
+
+      <div class="hero-chips">
+        <div class="hero-chip" onclick="quickSearch('AAPL')">AAPL</div>
+        <div class="hero-chip" onclick="quickSearch('MSFT')">MSFT</div>
+        <div class="hero-chip" onclick="quickSearch('NVDA')">NVDA</div>
+        <div class="hero-chip" onclick="quickSearch('META')">META</div>
+        <div class="hero-chip" onclick="quickSearch('TSLA')">TSLA</div>
+        <div class="hero-chip" onclick="quickSearch('GOOGL')">GOOGL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 Features -->
+  <div class="features-section">
+    <div class="features-grid">
+      <div class="feature-cell">
+        <div class="feature-num">01</div>
+        <div class="feature-icon">📄</div>
+        <div class="feature-title">SEC Filing Analysis</div>
+        <p class="feature-desc">AI reads your 10-Q and 8-K filings to extract sentiment, themes, and tone — no more manual parsing.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-num">02</div>
+        <div class="feature-icon">📈</div>
+        <div class="feature-title">Price Reaction</div>
+        <p class="feature-desc">See exactly how the market reacted around the filing date with a 60-day price window and key stats.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-num">03</div>
+        <div class="feature-icon">🏛</div>
+        <div class="feature-title">Insider Trades</div>
+        <p class="feature-desc">Track Form 4 filings from corporate insiders — who bought, who sold, and how much.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-num">04</div>
+        <div class="feature-icon">🏦</div>
+        <div class="feature-title">Congressional Trades</div>
+        <p class="feature-desc">Monitor House member stock disclosures sourced directly from the House Clerk's official records.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /emptyState -->
+
+<!-- ── Dashboard ──────────────────────────────────────────────────────────── -->
 <div id="dashboard">
   <div class="dash-wrap">
 
@@ -746,8 +1029,8 @@
       <div>
         <div class="co-name" id="d-name"></div>
         <div class="co-meta">
-          <span class="tag tag-blue" id="d-form"></span>
-          <span class="tag tag-muted" id="d-date"></span>
+          <span class="tag tag-accent" id="d-form"></span>
+          <span class="tag tag-muted"  id="d-date"></span>
         </div>
       </div>
       <div id="d-pill"></div>
@@ -766,7 +1049,7 @@
       </div>
       <div class="metric-card">
         <div class="metric-label">Filing Type</div>
-        <div class="metric-value" style="font-size:1.1rem" id="m-form"></div>
+        <div class="metric-value" style="font-size:1.2rem" id="m-form"></div>
         <div class="metric-sub" id="m-form-desc"></div>
       </div>
       <div class="metric-card">
@@ -778,7 +1061,6 @@
 
     <!-- Charts row -->
     <div class="charts-row">
-
       <!-- Gauge -->
       <div class="chart-card">
         <div class="card-title">Current Sentiment</div>
@@ -803,7 +1085,6 @@
           <canvas id="historyChart"></canvas>
         </div>
       </div>
-
     </div>
 
     <!-- Summary -->
@@ -813,7 +1094,7 @@
     </div>
 
     <!-- Themes -->
-    <div class="section-header">Key Themes</div>
+    <div class="section-label">Key Themes</div>
     <div class="themes-grid" id="d-themes"></div>
 
     <!-- Tone + Quotes -->
@@ -842,9 +1123,11 @@
 
     <!-- Stock Price Reaction -->
     <div class="price-reaction-card">
-      <div class="card-title">Stock Price Reaction  <span id="price-window-label" style="color:var(--txt-3);font-weight:400;text-transform:none;letter-spacing:0"></span></div>
+      <div class="card-title">
+        Stock Price Reaction
+        <span id="price-window-label" style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0"></span>
+      </div>
 
-      <!-- 3 stat cards -->
       <div class="price-stats-row" id="price-stats-row">
         <div class="price-stat">
           <div class="price-stat-label">Price on Filing Date</div>
@@ -860,7 +1143,6 @@
         </div>
       </div>
 
-      <!-- Chart -->
       <div class="price-chart-wrap" id="price-chart-wrap">
         <div class="price-empty" id="price-empty">Loading price data…</div>
         <canvas id="priceChart" style="display:none"></canvas>
@@ -869,7 +1151,10 @@
 
     <!-- Insider Trades -->
     <div class="trades-section card">
-      <div class="card-title">Insider Trades  <span style="color:var(--txt-3);font-weight:400;text-transform:none;letter-spacing:0">— SEC Form 4</span></div>
+      <div class="card-title">
+        Insider Trades
+        <span style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0">— SEC Form 4</span>
+      </div>
       <div class="trades-table-wrap" id="insider-wrap">
         <div class="trades-loading">Loading insider trades…</div>
       </div>
@@ -877,7 +1162,10 @@
 
     <!-- Congressional Trades -->
     <div class="trades-section card">
-      <div class="card-title">Congressional Trades  <span style="color:var(--txt-3);font-weight:400;text-transform:none;letter-spacing:0">— House Stock Watcher</span></div>
+      <div class="card-title">
+        Congressional Trades
+        <span style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0">— House Clerk Disclosures</span>
+      </div>
       <div class="trades-table-wrap" id="congress-wrap">
         <div class="trades-loading">Loading congressional trades…</div>
       </div>
@@ -888,7 +1176,7 @@
 
 
 <script>
-/* ── Helpers ────────────────────────────────────────────────────────────── */
+/* ── Helpers ─────────────────────────────────────────────────────────────── */
 const $ = id => document.getElementById(id);
 
 function esc(str) {
@@ -918,13 +1206,32 @@ function showError(msg) {
 
 function quickSearch(ticker) {
   $('tickerInput').value = ticker;
+  $('heroInput').value   = ticker;
   startAnalysis();
 }
 
+function heroSearch() {
+  const val = $('heroInput').value.trim().toUpperCase();
+  if (val) $('tickerInput').value = val;
+  startAnalysis();
+}
+
+function backToHome() {
+  document.body.classList.remove('has-results');
+  $('tickerInput').value = '';
+  $('heroInput').value   = '';
+}
+
+// Keyboard shortcuts
 document.addEventListener('keydown', e => {
-  if (e.key === '/' && document.activeElement !== $('tickerInput')) {
+  const active = document.activeElement;
+  if (e.key === '/' && active !== $('tickerInput') && active !== $('heroInput')) {
     e.preventDefault();
-    $('tickerInput').focus();
+    if (document.body.classList.contains('has-results')) {
+      $('tickerInput').focus();
+    } else {
+      $('heroInput').focus();
+    }
   }
 });
 
@@ -932,9 +1239,13 @@ $('tickerInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') startAnalysis();
 });
 
-/* ── Loading UI ─────────────────────────────────────────────────────────── */
+$('heroInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') heroSearch();
+});
+
+/* ── Loading UI ──────────────────────────────────────────────────────────── */
 let _progressMessages = [];
-const TOTAL_STEPS = 11; // approximate number of progress messages
+const TOTAL_STEPS = 11;
 
 function showLoading(ticker) {
   _progressMessages = [];
@@ -948,7 +1259,6 @@ function addProgressMessage(msg) {
   _progressMessages.push(msg);
   const steps = $('progressSteps');
 
-  // Mark previous step as done
   const prev = steps.querySelector('.active');
   if (prev) {
     prev.classList.remove('active');
@@ -957,20 +1267,17 @@ function addProgressMessage(msg) {
     prev.querySelector('.step-icon').textContent = '✓';
   }
 
-  // Add new active step
   const el = document.createElement('div');
   el.className = 'progress-step active';
   el.innerHTML = `<div class="step-icon spinner-sm"></div><span>${esc(msg)}</span>`;
   steps.appendChild(el);
   el.scrollIntoView({ block: 'nearest' });
 
-  // Update progress bar
   const pct = Math.min(95, (_progressMessages.length / TOTAL_STEPS) * 100);
   $('progressBar').style.width = pct + '%';
 }
 
 function hideLoading() {
-  // Complete the last step
   const last = $('progressSteps').querySelector('.active');
   if (last) {
     last.classList.remove('active');
@@ -982,11 +1289,10 @@ function hideLoading() {
   setTimeout(() => $('loadingOverlay').classList.remove('active'), 400);
 }
 
-/* ── Charts ─────────────────────────────────────────────────────────────── */
+/* ── Charts ──────────────────────────────────────────────────────────────── */
 let _gaugeChart   = null;
 let _historyChart = null;
 
-// Custom Chart.js plugin: draws needle on the gauge
 const needlePlugin = {
   id: 'gaugeNeedle',
   afterDatasetsDraw(chart) {
@@ -998,32 +1304,26 @@ const needlePlugin = {
     if (!meta.data[0]) return;
 
     const { x, y, innerRadius, outerRadius } = meta.data[0];
-
-    // Angle: score −1 → π (9 o'clock), score 0 → 3π/2 (12 o'clock), score 1 → 2π (3 o'clock)
-    const angle = Math.PI + ((score + 1) / 2) * Math.PI;
+    const angle     = Math.PI + ((score + 1) / 2) * Math.PI;
     const needleLen = innerRadius + (outerRadius - innerRadius) * 0.65;
     const nx = x + needleLen * Math.cos(angle);
     const ny = y + needleLen * Math.sin(angle);
 
     ctx.save();
-
-    // Needle shadow
-    ctx.shadowColor = 'rgba(0,0,0,0.4)';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
     ctx.shadowBlur  = 4;
 
-    // Needle line
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(nx, ny);
-    ctx.strokeStyle = '#e8edf5';
+    ctx.strokeStyle = '#f0f0f0';
     ctx.lineWidth   = 2.5;
     ctx.lineCap     = 'round';
     ctx.stroke();
 
-    // Center dot
     ctx.beginPath();
     ctx.arc(x, y, 5, 0, 2 * Math.PI);
-    ctx.fillStyle = '#e8edf5';
+    ctx.fillStyle = '#f0f0f0';
     ctx.fill();
 
     ctx.restore();
@@ -1035,7 +1335,7 @@ Chart.register(needlePlugin);
 function buildGauge(score, sentiment) {
   if (_gaugeChart) { _gaugeChart.destroy(); _gaugeChart = null; }
 
-  const pct   = ((score + 1) / 2) * 100;  // −1..1 → 0..100
+  const pct   = ((score + 1) / 2) * 100;
   const color = scoreColor(score);
 
   _gaugeChart = new Chart($('gaugeChart'), {
@@ -1043,7 +1343,7 @@ function buildGauge(score, sentiment) {
     data: {
       datasets: [{
         data: [pct, 100 - pct],
-        backgroundColor: [color, 'rgba(28,43,66,0.8)'],
+        backgroundColor: [color, 'rgba(255,255,255,0.04)'],
         borderWidth: 0,
         circumference: 180,
         rotation: 270,
@@ -1052,7 +1352,7 @@ function buildGauge(score, sentiment) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '68%',
+      cutout: '70%',
       animation: { duration: 900, easing: 'easeOutQuart' },
       _needleScore: score,
       plugins: {
@@ -1062,33 +1362,31 @@ function buildGauge(score, sentiment) {
     }
   });
 
-  // Center text
   const scoreStr = score >= 0 ? `+${score.toFixed(2)}` : score.toFixed(2);
-  $('gauge-num').textContent  = scoreStr;
-  $('gauge-num').style.color  = color;
-  $('gauge-lbl').textContent  = sentiment.toUpperCase();
-  $('gauge-lbl').style.color  = color;
+  $('gauge-num').textContent = scoreStr;
+  $('gauge-num').style.color = color;
+  $('gauge-lbl').textContent = sentiment.toUpperCase();
+  $('gauge-lbl').style.color = color;
 }
 
 function buildHistoryChart(history) {
   if (_historyChart) { _historyChart.destroy(); _historyChart = null; }
   if (!history || history.length === 0) return;
 
-  // Sort oldest → newest
   const sorted = [...history].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  const labels = sorted.map(h => {
+  const labels   = sorted.map(h => {
     const d = new Date(h.date);
     return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
   });
-  const scores  = sorted.map(h => h.sentiment_score);
+  const scores   = sorted.map(h => h.sentiment_score);
   const ptColors = scores.map(s => scoreColor(s));
 
-  const ctx   = $('historyChart');
-  const gCtx  = ctx.getContext('2d');
-  const grad  = gCtx.createLinearGradient(0, 0, 0, 200);
-  grad.addColorStop(0, 'rgba(59,130,246,0.25)');
-  grad.addColorStop(1, 'rgba(59,130,246,0)');
+  const ctx  = $('historyChart');
+  const gCtx = ctx.getContext('2d');
+  const grad = gCtx.createLinearGradient(0, 0, 0, 185);
+  grad.addColorStop(0, 'rgba(232,64,51,0.18)');
+  grad.addColorStop(1, 'rgba(232,64,51,0)');
 
   _historyChart = new Chart(ctx, {
     type: 'line',
@@ -1098,20 +1396,19 @@ function buildHistoryChart(history) {
         {
           label: 'Sentiment Score',
           data: scores,
-          borderColor: 'var(--blue)',
+          borderColor: 'var(--accent)',
           backgroundColor: grad,
           fill: true,
           tension: 0.4,
           pointRadius: 6,
           pointBackgroundColor: ptColors,
-          pointBorderColor: '#111827',
+          pointBorderColor: '#141414',
           pointBorderWidth: 2,
           pointHoverRadius: 9,
         },
-        // Zero reference line
         {
           data: labels.map(() => 0),
-          borderColor: 'rgba(255,255,255,0.08)',
+          borderColor: 'rgba(255,255,255,0.06)',
           borderDash: [4, 4],
           pointRadius: 0,
           fill: false,
@@ -1126,32 +1423,32 @@ function buildHistoryChart(history) {
       scales: {
         y: {
           min: -1, max: 1,
-          grid:   { color: 'rgba(28,43,66,0.8)' },
+          grid:   { color: 'rgba(255,255,255,0.04)' },
           border: { color: 'transparent' },
           ticks: {
-            color: 'var(--txt-3)',
-            font: { size: 11 },
+            color: 'var(--text-3)',
+            font: { size: 10 },
             callback: v => v > 0 ? `+${v}` : `${v}`,
           }
         },
         x: {
-          grid:   { color: 'rgba(28,43,66,0.8)' },
+          grid:   { color: 'rgba(255,255,255,0.04)' },
           border: { color: 'transparent' },
-          ticks:  { color: 'var(--txt-3)', font: { size: 11 } }
+          ticks:  { color: 'var(--text-3)', font: { size: 10 } }
         }
       },
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#1a2540',
-          borderColor:     '#263d5c',
+          backgroundColor: '#1a1a1a',
+          borderColor:     'rgba(255,255,255,0.12)',
           borderWidth:     1,
-          titleColor:      '#e8edf5',
-          bodyColor:       '#8c9db5',
+          titleColor:      '#f0f0f0',
+          bodyColor:       '#888888',
           padding:         10,
           callbacks: {
             title: items => sorted[items[0].dataIndex].date,
-            label: item => {
+            label: item  => {
               const h = sorted[item.dataIndex];
               const s = item.raw >= 0 ? `+${item.raw.toFixed(2)}` : item.raw.toFixed(2);
               const lines = [`Score: ${s}`, `Filing: ${h.form}`];
@@ -1165,7 +1462,7 @@ function buildHistoryChart(history) {
   });
 }
 
-/* ── Render results ─────────────────────────────────────────────────────── */
+/* ── Render results ──────────────────────────────────────────────────────── */
 function renderDashboard(a) {
   const score     = parseFloat(a.sentiment_score) || 0;
   const sentiment = a.sentiment || 'neutral';
@@ -1178,7 +1475,7 @@ function renderDashboard(a) {
   $('d-form').textContent = a.form || '—';
   $('d-date').textContent = a.date || '—';
 
-  const pillCls = `sentiment-pill pill-${sentiment}`;
+  const pillCls   = `sentiment-pill pill-${sentiment}`;
   const pillEmoji = sentiment === 'positive' ? '▲' : sentiment === 'negative' ? '▼' : '◆';
   $('d-pill').innerHTML = `<span class="${pillCls}">${pillEmoji} ${capitalize(sentiment)}</span>`;
 
@@ -1234,10 +1531,9 @@ function renderDashboard(a) {
     .join('');
 
   // Show dashboard
-  $('emptyState').style.display  = 'none';
-  $('dashboard').classList.add('active');
+  document.body.classList.add('has-results');
 
-  // Kick off async data fetches
+  // Kick off async fetches
   $('insider-wrap').innerHTML  = '<div class="trades-loading">Loading insider trades…</div>';
   $('congress-wrap').innerHTML = '<div class="trades-loading">Loading congressional trades…</div>';
   loadTrades(a.ticker);
@@ -1248,7 +1544,7 @@ function capitalize(s) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 }
 
-/* ── Stock Price Reaction ───────────────────────────────────────────────── */
+/* ── Stock Price Reaction ────────────────────────────────────────────────── */
 let _priceChart = null;
 
 function buildPriceChart(prices, filingIdx) {
@@ -1260,32 +1556,29 @@ function buildPriceChart(prices, filingIdx) {
   const canvas = $('priceChart');
   const ctx    = canvas.getContext('2d');
 
-  // Gradient fill
   const grad = ctx.createLinearGradient(0, 0, 0, 220);
-  grad.addColorStop(0, 'rgba(59,130,246,0.2)');
-  grad.addColorStop(1, 'rgba(59,130,246,0)');
+  grad.addColorStop(0, 'rgba(232,64,51,0.15)');
+  grad.addColorStop(1, 'rgba(232,64,51,0)');
 
-  // Vertical-line plugin marking the filing date
   const filingLinePlugin = {
     id: 'filingLine',
     afterDraw(chart) {
       if (filingIdx == null || filingIdx < 0) return;
       const meta = chart.getDatasetMeta(0);
       if (!meta.data[filingIdx]) return;
-      const x   = meta.data[filingIdx].x;
+      const x = meta.data[filingIdx].x;
       const { ctx: c, chartArea: { top, bottom } } = chart;
       c.save();
       c.beginPath();
       c.moveTo(x, top);
       c.lineTo(x, bottom);
-      c.strokeStyle = 'rgba(239,68,68,0.85)';
+      c.strokeStyle = 'rgba(232,64,51,0.8)';
       c.lineWidth   = 1.5;
       c.setLineDash([4, 3]);
       c.stroke();
-      // Small label
-      c.font        = '600 10px Inter, system-ui, sans-serif';
-      c.fillStyle   = 'rgba(239,68,68,0.9)';
-      c.textAlign   = 'center';
+      c.font      = '600 10px Inter, system-ui, sans-serif';
+      c.fillStyle = 'rgba(232,64,51,0.9)';
+      c.textAlign = 'center';
       c.fillText('Filing', x, top + 12);
       c.restore();
     }
@@ -1298,14 +1591,14 @@ function buildPriceChart(prices, filingIdx) {
       labels,
       datasets: [{
         data:                closes,
-        borderColor:         'var(--blue)',
+        borderColor:         'var(--accent)',
         backgroundColor:     grad,
         fill:                true,
         tension:             0.35,
         pointRadius:         0,
         pointHoverRadius:    5,
-        pointHoverBackgroundColor: 'var(--blue)',
-        pointHoverBorderColor:     '#111827',
+        pointHoverBackgroundColor: 'var(--accent)',
+        pointHoverBorderColor:     '#141414',
         pointHoverBorderWidth:     2,
         borderWidth:         2,
       }]
@@ -1317,34 +1610,34 @@ function buildPriceChart(prices, filingIdx) {
       interaction:         { mode: 'index', intersect: false },
       scales: {
         x: {
-          grid:   { color: 'rgba(28,43,66,0.8)' },
+          grid:   { color: 'rgba(255,255,255,0.04)' },
           border: { color: 'transparent' },
           ticks:  {
-            color:     'var(--txt-3)',
-            font:      { size: 10 },
+            color:         'var(--text-3)',
+            font:          { size: 10 },
             maxTicksLimit: 8,
             maxRotation:   0,
           }
         },
         y: {
           position: 'right',
-          grid:   { color: 'rgba(28,43,66,0.8)' },
+          grid:   { color: 'rgba(255,255,255,0.04)' },
           border: { color: 'transparent' },
           ticks:  {
-            color:     'var(--txt-3)',
-            font:      { size: 10 },
-            callback:  v => '$' + v.toFixed(0),
+            color:    'var(--text-3)',
+            font:     { size: 10 },
+            callback: v => '$' + v.toFixed(0),
           }
         }
       },
       plugins: {
         legend:  { display: false },
         tooltip: {
-          backgroundColor: '#1a2540',
-          borderColor:     '#263d5c',
+          backgroundColor: '#1a1a1a',
+          borderColor:     'rgba(255,255,255,0.12)',
           borderWidth:     1,
-          titleColor:      '#e8edf5',
-          bodyColor:       '#8c9db5',
+          titleColor:      '#f0f0f0',
+          bodyColor:       '#888888',
           padding:         10,
           callbacks: {
             title: items => items[0].label,
@@ -1355,16 +1648,15 @@ function buildPriceChart(prices, filingIdx) {
     }
   });
 
-  $('price-empty').style.display  = 'none';
-  canvas.style.display            = 'block';
+  $('price-empty').style.display = 'none';
+  canvas.style.display           = 'block';
 }
 
 async function loadPriceReaction(ticker, filingDate) {
-  // Reset to loading state
   $('price-empty').textContent   = 'Loading price data…';
   $('price-empty').style.display = 'block';
   $('priceChart').style.display  = 'none';
-  ['ps-on-date', 'ps-30-later', 'ps-pct-change'].forEach(id => $( id).textContent = '—');
+  ['ps-on-date', 'ps-30-later', 'ps-pct-change'].forEach(id => $(id).textContent = '—');
   $('price-window-label').textContent = '';
 
   try {
@@ -1377,7 +1669,6 @@ async function loadPriceReaction(ticker, filingDate) {
       return;
     }
 
-    // Stats
     if (stats && stats.price_on_date != null) {
       $('ps-on-date').textContent  = '$' + stats.price_on_date.toFixed(2);
       $('ps-30-later').textContent = '$' + stats.price_30_later.toFixed(2);
@@ -1385,11 +1676,10 @@ async function loadPriceReaction(ticker, filingDate) {
       const pct   = stats.pct_change;
       const color = pct >= 0 ? 'var(--green)' : 'var(--red)';
       const sign  = pct >= 0 ? '+' : '';
-      $('ps-pct-change').textContent  = sign + pct.toFixed(2) + '%';
-      $('ps-pct-change').style.color  = color;
+      $('ps-pct-change').textContent = sign + pct.toFixed(2) + '%';
+      $('ps-pct-change').style.color = color;
     }
 
-    // Window label
     const first = prices[0][0];
     const last  = prices[prices.length - 1][0];
     $('price-window-label').textContent = `— ${first} to ${last}`;
@@ -1401,7 +1691,7 @@ async function loadPriceReaction(ticker, filingDate) {
   }
 }
 
-/* ── Trades ─────────────────────────────────────────────────────────────── */
+/* ── Trades ──────────────────────────────────────────────────────────────── */
 function fmtValue(v) {
   if (!v || v === 0) return '—';
   if (v >= 1e6) return '$' + (v / 1e6).toFixed(2) + 'M';
@@ -1421,7 +1711,7 @@ function renderInsiderTrades(trades) {
     return;
   }
   const rows = trades.map(t => {
-    const cls = t.is_buy ? 'trade-type-buy' : t.is_sell ? 'trade-type-sell' : 'trade-type-other';
+    const cls   = t.is_buy ? 'trade-type-buy' : t.is_sell ? 'trade-type-sell' : 'trade-type-other';
     const price = t.price ? '$' + parseFloat(t.price).toFixed(2) : '—';
     return `<tr>
       <td>${esc(t.date)}</td>
@@ -1454,14 +1744,13 @@ function renderCongressTrades(trades) {
     const cls  = type.includes('purchase') ? 'trade-type-buy'
                : type.includes('sale')     ? 'trade-type-sell'
                : 'trade-type-other';
-    const amt = t.amount || '—';
     return `<tr>
       <td>${esc(t.transaction_date || t.disclosure_date || '—')}</td>
       <td>${esc(t.representative || '—')}</td>
       <td>${esc(t.party || '—')}</td>
       <td>${esc(t.state || '—')}</td>
       <td class="${cls}">${esc(t.type || '—')}</td>
-      <td style="text-align:right">${esc(amt)}</td>
+      <td style="text-align:right">${esc(t.amount || '—')}</td>
     </tr>`;
   }).join('');
   wrap.innerHTML = `<table class="trades-table">
@@ -1486,10 +1775,21 @@ async function loadTrades(ticker) {
   }
 }
 
-/* ── Main analysis flow ─────────────────────────────────────────────────── */
+/* ── Main analysis flow ──────────────────────────────────────────────────── */
 async function startAnalysis() {
-  const ticker = $('tickerInput').value.trim().toUpperCase();
-  if (!ticker) { $('tickerInput').focus(); return; }
+  const ticker = $('tickerInput').value.trim().toUpperCase()
+              || $('heroInput').value.trim().toUpperCase();
+  if (!ticker) {
+    if (document.body.classList.contains('has-results')) {
+      $('tickerInput').focus();
+    } else {
+      $('heroInput').focus();
+    }
+    return;
+  }
+
+  $('tickerInput').value = ticker;
+  $('heroInput').value   = ticker;
 
   const btn = $('analyzeBtn');
   btn.disabled    = true;
@@ -1498,7 +1798,6 @@ async function startAnalysis() {
   showLoading(ticker);
 
   try {
-    // Kick off the analysis job
     const kickoff = await fetch('/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1512,7 +1811,6 @@ async function startAnalysis() {
       return;
     }
 
-    // Open SSE stream for live progress updates
     const es = new EventSource(`/stream/${job_id}`);
 
     es.onmessage = function (event) {
@@ -1520,12 +1818,10 @@ async function startAnalysis() {
 
       if (data.type === 'progress') {
         addProgressMessage(data.message);
-
       } else if (data.type === 'done') {
         es.close();
         hideLoading();
         renderDashboard(data.result);
-
       } else if (data.type === 'error') {
         es.close();
         hideLoading();
