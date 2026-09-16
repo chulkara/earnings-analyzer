@@ -1,43 +1,91 @@
 # Deploying to Render + Turso (actually $0)
 
+Sources for every claim below: [render.com/docs/free](https://render.com/docs/free)
+and [render.com/pricing](https://render.com/pricing), read Sept 2026.
+
 The stack:
 
-- **Render** (Hobby plan, $0) — hosts the Flask app. Free web service:
-  512 MB RAM, sleeps after 15 min of inactivity, wakes in ~30 seconds on
-  next request. 750 hours/month of active time — far more than 20 users
-  will use.
-- **Turso** ($0 forever) — holds the SQLite cache in the cloud so
-  permalinks and the filing cache survive when Render puts the container
-  to sleep. Free tier: 9 GB storage, 1B row reads/mo, 25M writes/mo.
-- **`earnings.chulkara.com`** — custom domain, free on Render (Hobby
-  includes 2 domains).
+- **Render** (Hobby workspace, $0/mo + free compute plan for this service) —
+  hosts the Flask app. Free web service specs, per Render's docs:
+  - 512 MB RAM
+  - Spins down after **15 minutes** with no inbound HTTP or WebSocket traffic
+  - Spin-up on the next request takes **about 1 minute** (Render shows a
+    branded loading page to the visitor during spin-up)
+  - **750 free instance hours per workspace per calendar month** —
+    only active (non-spun-down) time counts
+  - Ephemeral filesystem: local files are lost on every spin-down, restart,
+    or redeploy — this is why we use Turso for durability
+  - Free instances can be suspended if they generate an "uncommonly high
+    volume" of outbound traffic to external APIs. Our 5-ticker whitelist
+    + auto-caching keeps this well inside normal use.
+- **Turso** (Starter plan, $0/mo, no expiration) — holds the SQLite cache
+  in the cloud so permalinks and the filing cache survive when Render puts
+  the container to sleep. Free tier: 9 GB storage, 1 billion row reads/mo,
+  25 million writes/mo.
+- **`earnings.chulkara.com`** — custom domain is free on Render's Hobby
+  workspace (2 included).
 
-Total forever cost: **$0**. Trade-off vs Fly.io: cold-start latency is
-~30 s the first time someone hits the site after 15 minutes of quiet.
-Every request after that is instant until the next idle window.
+Total forever cost: **$0**. Trade-off vs paying: the first visitor after
+15 minutes of quiet waits ~1 minute for the container to wake up. Every
+request after that is instant until the next idle window. The site's
+"About this demo" panel discloses this to visitors directly so there's
+no surprise.
 
 ---
 
 ## 1. Push the repo to GitHub
 
-    cd ~/Documents/earnings-analyzer
-    git init                # if not already
-    git add . && git commit -m "initial commit"
-    gh repo create earnings-analyzer --public --source=. --push
-    # or: create the repo on github.com and `git push` manually
+Render deploys from a GitHub repo — that's the only source of truth it
+knows about. Two ways to get the code up there:
 
-Render deploys from a GitHub repo; that's the only source of truth it
-knows about.
+**If you already have a repo locally:**
+
+    cd ~/Documents/earnings-analyzer
+    git add . && git commit -m "initial commit"
+    git push origin main
+
+**If you're starting fresh** (no remote configured yet), pick one path:
+
+Path A — GitHub CLI:
+
+    brew install gh
+    gh auth login
+    cd ~/Documents/earnings-analyzer
+    gh repo create earnings-analyzer --public --source=. --push
+
+Path B — plain git, create the repo on github.com first, then:
+
+    cd ~/Documents/earnings-analyzer
+    git init
+    git add . && git commit -m "initial commit"
+    git branch -M main
+    git remote add origin https://github.com/YOUR_USERNAME/earnings-analyzer.git
+    git push -u origin main
 
 ## 2. Create a free Turso database
 
-    brew install tursodatabase/tap/turso   # Mac
+Install the Turso CLI. If you don't have Homebrew, use the direct
+installer (recommended, one line):
+
+    curl -sSfL https://get.tur.so/install.sh | bash
+
+Then **close and reopen your Terminal** so the installer's PATH change
+takes effect. Verify it worked:
+
+    turso --version
+
+Now create the database and grab the two things Render needs:
+
     turso auth signup
     turso db create earnings-cache
     turso db show earnings-cache --url     # copy the libsql:// URL
     turso db tokens create earnings-cache  # copy the auth token
 
-Save both — you'll paste them into Render in step 4.
+Save both to a scratch note — the token is displayed once and never
+shown again. You'll paste them into Render in step 4.
+
+If you'd rather use Homebrew (`brew install tursodatabase/tap/turso`),
+that works too, but requires installing Homebrew first from brew.sh.
 
 ## 3. Create the Render service
 
@@ -117,16 +165,28 @@ in Turso (harmless), new runs re-analyze under the new version.
 
 ## Warm-up trick (optional)
 
-If the 30-second cold start bothers you, add a scheduled cron on
+If the ~1-minute cold start bothers you, add a scheduled cron on
 [cron-job.org](https://cron-job.org) (free) to hit
-`https://earnings.chulkara.com/healthz` every 10 minutes. Uses ~4,300
-requests/month of the free-tier budget, keeps the container warm all
-the time. Note: this eats your 750-hour Render allowance if left on
-24/7, so schedule it only during hours when someone might visit.
+`https://earnings.chulkara.com/healthz` every 10 minutes during hours
+someone might visit. Keeps the container warm.
 
-## What if you want to go back to Fly.io
+**Watch the math.** A container kept awake 24/7 consumes all 720 hours
+(30 days × 24 hours) of a month — comfortably under the 750-hour free
+allowance, but it leaves you no headroom if you decide to run a second
+free service on the same workspace. Ping it only during your waking
+hours (say 8am–midnight, 16 hours/day = 480 hours/month) and you keep
+270 hours in reserve.
+
+## Alternative: Fly.io (pay pennies, no cold start)
+
+Fly.io retired its free allowance in October 2024, so it's now pay-as-
+you-go. With auto-stop enabled (already in `fly.toml`) the numbers are
+tiny — [Fly's pricing docs](https://fly.io/docs/about/pricing/) list
+a `shared-cpu-1x` 256 MB machine at $1.94/mo running full-time, or
+$0.0027/hr while active. At 20 users doing one analysis each,
+realistic monthly cost is ~$0.20 (compute) + $0.15 (1 GB volume) =
+about $0.35/mo. Wakes in 1–2 seconds instead of a minute.
 
 The Fly.io files (`Dockerfile`, `fly.toml`) are still in the repo. Set
-Fly secrets and `fly deploy` and it'll work — no cache.py changes
-needed, because Turso is the same env-var-triggered adapter either
-way. Cost on Fly with auto-stop: ~$0.20/month at 20 users.
+Fly secrets and `fly deploy` — no `cache.py` changes needed, because
+Turso is the same env-var-triggered adapter either way.
