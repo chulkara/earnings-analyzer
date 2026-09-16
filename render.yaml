@@ -1,0 +1,39 @@
+# Render Infrastructure-as-Code — free-tier deployment for earnings-analyzer.
+#
+# On the first push to your GitHub repo Render reads this file, provisions
+# the free web service, and auto-deploys. All secrets stay in Render's
+# dashboard — never in this file.
+#
+# See DEPLOY.md for step-by-step setup.
+
+services:
+  - type: web
+    name: earnings-analyzer
+    runtime: python
+    plan: free                    # 512 MB RAM, sleeps after 15 min idle
+    region: oregon                # any free region works
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -w 1 --threads 8 --worker-class gthread -b 0.0.0.0:$PORT --timeout 120 app:app
+    healthCheckPath: /healthz
+
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: FLASK_ENV
+        value: production
+      - key: CACHE_DB_PATH
+        value: /tmp/cache.db      # local replica lives here; Turso is authoritative
+      - key: DEMO_TICKERS
+        value: AAPL,NVDA,TSLA,MSFT,JPM
+
+      # The four secrets are set via the Render dashboard so they don't
+      # end up in this file. `sync: false` = "let me fill this in later".
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ALPHAVANTAGE_API_KEY
+        sync: false
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false

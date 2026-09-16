@@ -4,6 +4,51 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EarningsAI — SEC Filing Intelligence</title>
+  <style>
+    .d-actions{margin-top:12px}
+    .d-action-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:var(--text-1,#fff);padding:6px 12px;border-radius:8px;font-size:.85rem;cursor:pointer;transition:background .15s}
+    .d-action-btn:hover{background:rgba(255,255,255,.12)}
+    .transcript-item{padding:12px 14px;margin:8px 0;border-radius:8px;background:rgba(255,255,255,.03);border-left:3px solid rgba(255,255,255,.2)}
+    .transcript-item.positive{border-left-color:#22c55e}
+    .transcript-item.negative{border-left-color:#ef4444}
+    .transcript-who{font-weight:600;font-size:.85rem;opacity:.75;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+    .transcript-quote{font-style:italic;line-height:1.5}
+    #diff-modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+    #diff-modal .diff-inner{background:#111820;border:1px solid rgba(255,255,255,.14);border-radius:14px;max-width:820px;width:100%;max-height:88vh;overflow:auto;padding:22px 24px}
+    #diff-modal .diff-close{float:right;background:transparent;border:0;color:#94a3b8;font-size:22px;cursor:pointer}
+    #diff-modal h3{margin:0 0 12px 0;font-size:1.1rem;letter-spacing:.02em}
+    #diff-run-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+    .diff-run-btn{display:grid;grid-template-columns:60px 100px 60px 1fr;gap:10px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:var(--text-1,#fff);padding:8px 12px;border-radius:8px;font-size:.85rem;cursor:pointer;text-align:left}
+    .diff-run-btn:hover{background:rgba(255,255,255,.09)}
+    .diff-run-form{font-weight:700}
+    .diff-run-when{opacity:.55;font-size:.75rem;text-align:right}
+    .diff-run-score.positive{color:#22c55e}
+    .diff-run-score.negative{color:#ef4444}
+    .diff-header{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.1)}
+    .diff-headline{font-size:1.05rem;font-weight:700;margin-bottom:6px}
+    .diff-meta{font-size:.85rem;opacity:.7}
+    .diff-sentiment-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 0}
+    .diff-block{margin-top:14px}
+    .diff-block-title{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;opacity:.55;margin-bottom:8px}
+    .diff-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+    .diff-list li{padding:8px 12px;border-radius:6px;line-height:1.45;font-size:.9rem}
+    .diff-list .diff-add{background:rgba(34,197,94,.08);border-left:3px solid #22c55e}
+    .diff-list .diff-rem{background:rgba(239,68,68,.08);border-left:3px solid #ef4444;opacity:.72;text-decoration:line-through}
+    .diff-hint{opacity:.65;font-size:.9rem}
+    .demo-note{font-size:.75rem;opacity:.55;margin-top:8px}
+    .about-demo{margin-top:14px;text-align:left;max-width:520px;margin-left:auto;margin-right:auto}
+    .about-toggle{background:transparent;border:1px solid rgba(255,255,255,.14);color:inherit;padding:6px 12px;border-radius:6px;font-size:.75rem;letter-spacing:.06em;cursor:pointer;opacity:.6;transition:opacity .2s,background .2s;display:inline-flex;align-items:center;gap:6px}
+    .about-toggle:hover{opacity:1;background:rgba(255,255,255,.06)}
+    .about-toggle .about-icon{font-size:.9rem}
+    .about-toggle[aria-expanded="true"]{opacity:1}
+    .about-panel{margin-top:12px;padding:16px 18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:.82rem;line-height:1.5;text-align:left}
+    .about-panel[hidden]{display:none}
+    .about-row{display:grid;grid-template-columns:96px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+    .about-row:last-child{border-bottom:0}
+    .about-k{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;opacity:.5;padding-top:2px}
+    .about-v{opacity:.85}
+    .about-v code{font-family:'JetBrains Mono',ui-monospace,monospace;background:rgba(255,255,255,.08);padding:1px 5px;border-radius:3px;font-size:.9em}
+  </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -977,13 +1022,44 @@
         <button class="hero-btn" onclick="heroSearch()">Analyze</button>
       </div>
 
-      <div class="hero-chips">
+      <div class="hero-chips" id="hero-chips">
         <div class="hero-chip" onclick="quickSearch('AAPL')">AAPL</div>
         <div class="hero-chip" onclick="quickSearch('MSFT')">MSFT</div>
         <div class="hero-chip" onclick="quickSearch('NVDA')">NVDA</div>
         <div class="hero-chip" onclick="quickSearch('META')">META</div>
         <div class="hero-chip" onclick="quickSearch('TSLA')">TSLA</div>
         <div class="hero-chip" onclick="quickSearch('GOOGL')">GOOGL</div>
+      </div>
+      {% if demo_tickers %}
+      <div class="demo-note">Demo mode — analysis available for: {{ demo_tickers|join(', ') }}. <a href="https://github.com/chulkara/earnings-analyzer" style="color:inherit;text-decoration:underline">Clone the repo</a> to run any ticker.</div>
+      {% endif %}
+
+      <div class="about-demo">
+        <button class="about-toggle" type="button" onclick="toggleAboutDemo()" aria-expanded="false" aria-controls="about-panel">
+          <span class="about-icon">ⓘ</span> About this demo
+        </button>
+        <div id="about-panel" class="about-panel" hidden>
+          <div class="about-row">
+            <span class="about-k">Hosting</span>
+            <span class="about-v">Render free tier (compute) + Turso free tier (storage). Runs at $0/mo.</span>
+          </div>
+          <div class="about-row">
+            <span class="about-k">Cold start</span>
+            <span class="about-v">If nobody's used the site in 15+ minutes, Render puts the container to sleep. Your first request wakes it — expect ~1 minute of Render's loading screen. Every request after that is instant until the next quiet period.</span>
+          </div>
+          <div class="about-row">
+            <span class="about-k">Permalinks</span>
+            <span class="about-v">Every analysis is stored in Turso, so shareable links survive the container sleeping and every redeploy. Old runs load in under a second once the container's awake.</span>
+          </div>
+          <div class="about-row">
+            <span class="about-k">Cost cap</span>
+            <span class="about-v">Analysis is limited to 5 tickers so nobody can run up the LLM bill. Clone the repo and set your own <code>GROQ_API_KEY</code> to analyze anything.</span>
+          </div>
+          <div class="about-row">
+            <span class="about-k">Trade-off</span>
+            <span class="about-v">Paying ~$0.20/mo on Fly.io would eliminate the cold start entirely. Chose $0 with a slower first-visit over pennies with instant response — it's a portfolio demo, not a production app.</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1034,6 +1110,10 @@
         </div>
       </div>
       <div id="d-pill"></div>
+      <div id="d-actions" class="d-actions" style="display:none;margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="d-action-btn" id="btn-permalink" onclick="copyPermalink()" title="Copy shareable link">🔗 Copy link</button>
+        <button class="d-action-btn" id="btn-compare"  onclick="openCompareMenu()" title="Compare to a previous run">↔ Compare to previous</button>
+      </div>
     </div>
 
     <!-- Metric cards -->
@@ -1121,6 +1201,18 @@
       </div>
     </div>
 
+    <!-- Earnings call transcript highlights (only when AlphaVantage returned one) -->
+    <div class="card" id="transcript-card" style="display:none">
+      <div class="card-title">Earnings Call — <span id="transcript-quarter" style="color:var(--text-3);font-weight:400;letter-spacing:0;text-transform:none"></span></div>
+      <div id="transcript-highlights"></div>
+    </div>
+
+    <!-- Analyst concerns (only when transcript populated the field) -->
+    <div class="card" id="analyst-concerns-card" style="display:none">
+      <div class="card-title">Analyst Pushback</div>
+      <ul class="item-list" id="d-concerns"></ul>
+    </div>
+
     <!-- Stock Price Reaction -->
     <div class="price-reaction-card">
       <div class="card-title">
@@ -1174,6 +1266,22 @@
   </div><!-- /dash-wrap -->
 </div><!-- /dashboard -->
 
+<!-- Diff comparison modal -->
+<div id="diff-modal">
+  <div class="diff-inner">
+    <button class="diff-close" onclick="closeDiffModal()" aria-label="Close">×</button>
+    <h3>Compare runs</h3>
+    <div id="diff-run-list"></div>
+    <div id="diff-body"></div>
+  </div>
+</div>
+
+{% if preloaded_run %}
+<script>window.__PRELOADED_RUN__ = {{ preloaded_run | tojson }};</script>
+{% endif %}
+{% if demo_tickers %}
+<script>window.__DEMO_TICKERS__ = {{ demo_tickers | tojson }};</script>
+{% endif %}
 
 <script>
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
@@ -1464,6 +1572,8 @@ function buildHistoryChart(history) {
 
 /* ── Render results ──────────────────────────────────────────────────────── */
 function renderDashboard(a) {
+  _currentRunId = a.run_id || null;
+  $('d-actions').style.display = _currentRunId ? 'flex' : 'none';
   const score     = parseFloat(a.sentiment_score) || 0;
   const sentiment = a.sentiment || 'neutral';
   const color     = sentimentColor(sentiment);
@@ -1529,6 +1639,9 @@ function renderDashboard(a) {
   $('d-risks').innerHTML = (a.risks || [])
     .map(r => `<li><span class="bullet bullet-red"></span>${esc(r)}</li>`)
     .join('');
+
+  // Transcript + analyst concerns
+  renderTranscript(a);
 
   // Show dashboard
   document.body.classList.add('has-results');
@@ -1776,6 +1889,155 @@ async function loadTrades(ticker) {
 }
 
 /* ── Main analysis flow ──────────────────────────────────────────────────── */
+/* ── Permalinks, transcripts, diff mode ─────────────────────────────────── */
+let _currentRunId = null;
+
+function copyPermalink() {
+  if (!_currentRunId) return;
+  const url = `${window.location.origin}/r/${_currentRunId}`;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = $('btn-permalink');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Link copied';
+    setTimeout(() => { btn.textContent = orig; }, 1600);
+  }).catch(() => showError('Could not copy — link: ' + url));
+}
+
+async function openCompareMenu() {
+  if (!_currentRunId) return;
+  const ticker = $('d-name').textContent.split('·').pop().trim();
+  const resp = await fetch(`/history/${encodeURIComponent(ticker)}`);
+  const data = await resp.json();
+  const others = (data.runs || []).filter(r => r.run_id !== _currentRunId);
+  if (!others.length) {
+    showError('No earlier runs of this ticker to compare against yet.');
+    return;
+  }
+  showCompareModal(others);
+}
+
+function showCompareModal(runs) {
+  const modal = $('diff-modal');
+  const list = $('diff-run-list');
+  list.innerHTML = runs.map(r => {
+    const when = new Date(r.created_at * 1000).toLocaleString();
+    const scoreStr = r.sentiment_score != null
+      ? (r.sentiment_score >= 0 ? '+' : '') + r.sentiment_score.toFixed(2)
+      : '—';
+    return `<button class="diff-run-btn" onclick="runDiff('${r.run_id}')">
+      <span class="diff-run-form">${esc(r.form || '')}</span>
+      <span class="diff-run-date">${esc(r.date || '')}</span>
+      <span class="diff-run-score ${r.sentiment || 'neutral'}">${scoreStr}</span>
+      <span class="diff-run-when">${when}</span>
+    </button>`;
+  }).join('');
+  $('diff-body').innerHTML = '<p class="diff-hint">Pick an earlier run to compare against the current one.</p>';
+  modal.style.display = 'flex';
+}
+
+function closeDiffModal() { $('diff-modal').style.display = 'none'; }
+
+async function runDiff(olderRunId) {
+  $('diff-body').innerHTML = '<p class="diff-hint">Computing diff…</p>';
+  const resp = await fetch(`/diff/${_currentRunId}/${olderRunId}`);
+  const data = await resp.json();
+  if (data.error) {
+    $('diff-body').innerHTML = `<p class="diff-hint">${esc(data.error)}</p>`;
+    return;
+  }
+  $('diff-body').innerHTML = renderDiff(data.diff);
+}
+
+function renderDiff(d) {
+  const s = d.sentiment_shift;
+  const arrow = s.delta > 0 ? '▲' : s.delta < 0 ? '▼' : '◆';
+  const dColor = s.delta > 0 ? '#22c55e' : s.delta < 0 ? '#ef4444' : '#94a3b8';
+  const deltaStr = (s.delta >= 0 ? '+' : '') + s.delta.toFixed(2);
+
+  const meta = d.meta;
+  const header = `
+    <div class="diff-header">
+      <div class="diff-headline">${esc(d.headline)}</div>
+      <div class="diff-meta">
+        <span>${esc(meta.older.form || '')} ${esc(meta.older.date || '')}</span>
+        <span style="margin:0 8px">→</span>
+        <span>${esc(meta.newer.form || '')} ${esc(meta.newer.date || '')}</span>
+      </div>
+    </div>`;
+
+  const sentimentBlock = `
+    <div class="diff-sentiment">
+      <div class="diff-sentiment-row">
+        <span>Sentiment</span>
+        <span class="pill-${s.old_label || 'neutral'}">${esc(capitalize(s.old_label || 'neutral'))}</span>
+        <span style="opacity:.5">→</span>
+        <span class="pill-${s.new_label || 'neutral'}">${esc(capitalize(s.new_label || 'neutral'))}</span>
+        <span style="color:${dColor};font-weight:700">${arrow} ${deltaStr}</span>
+      </div>
+    </div>`;
+
+  const beat = d.beat_flip
+    ? `<div class="diff-block"><b>Beats/misses flipped:</b> ${d.beat_flip.was ? 'beat' : 'missed'} → ${d.beat_flip.now ? 'beat' : 'missed'}</div>`
+    : '';
+
+  const themesAdd = (d.themes_added || []).map(t =>
+    `<li class="diff-add"><b>${esc(t.title || '')}</b> — ${esc(t.description || '')}</li>`).join('');
+  const themesRem = (d.themes_removed || []).map(t =>
+    `<li class="diff-rem"><b>${esc(t.title || '')}</b> — ${esc(t.description || '')}</li>`).join('');
+  const themesBlock = (themesAdd || themesRem)
+    ? `<div class="diff-block"><div class="diff-block-title">Themes</div><ul class="diff-list">${themesAdd}${themesRem}</ul></div>` : '';
+
+  const risksAdd = (d.risks_added || []).map(r => `<li class="diff-add">${esc(r)}</li>`).join('');
+  const risksRem = (d.risks_removed || []).map(r => `<li class="diff-rem">${esc(r)}</li>`).join('');
+  const risksBlock = (risksAdd || risksRem)
+    ? `<div class="diff-block"><div class="diff-block-title">Risks</div><ul class="diff-list">${risksAdd}${risksRem}</ul></div>` : '';
+
+  const concerns = (d.concerns_added || []).map(c => `<li class="diff-add">${esc(c)}</li>`).join('');
+  const concernsBlock = concerns
+    ? `<div class="diff-block"><div class="diff-block-title">New analyst concerns</div><ul class="diff-list">${concerns}</ul></div>` : '';
+
+  return header + sentimentBlock + beat + themesBlock + risksBlock + concernsBlock;
+}
+
+function renderTranscript(a) {
+  const card = $('transcript-card');
+  if (!a.transcript_available || !(a.transcript_highlights || []).length) {
+    card.style.display = 'none';
+    $('analyst-concerns-card').style.display = 'none';
+    return;
+  }
+  card.style.display = '';
+  $('transcript-quarter').textContent = a.transcript_quarter || '';
+  $('transcript-highlights').innerHTML = (a.transcript_highlights || []).map(h => {
+    const who  = [h.speaker, h.title].filter(Boolean).join(' · ');
+    const s    = parseFloat(h.sentiment);
+    const tone = isFinite(s) ? (s > 0.2 ? 'positive' : s < -0.2 ? 'negative' : 'neutral') : 'neutral';
+    return `<div class="transcript-item ${tone}">
+      <div class="transcript-who">${esc(who)}</div>
+      <div class="transcript-quote">"${esc(h.content || '')}"</div>
+    </div>`;
+  }).join('');
+
+  const concerns = a.analyst_concerns || [];
+  if (concerns.length) {
+    $('analyst-concerns-card').style.display = '';
+    $('d-concerns').innerHTML = concerns.map(c =>
+      `<li><span class="bullet bullet-red"></span>${esc(c)}</li>`).join('');
+  } else {
+    $('analyst-concerns-card').style.display = 'none';
+  }
+}
+
+// Preload a saved run (from /r/<run_id>) — server injects a global.
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.__PRELOADED_RUN__) {
+    const r = window.__PRELOADED_RUN__;
+    _currentRunId = r.run_id;
+    r.result.run_id = r.run_id;
+    renderDashboard(r.result);
+  }
+});
+
 async function startAnalysis() {
   const ticker = $('tickerInput').value.trim().toUpperCase()
               || $('heroInput').value.trim().toUpperCase();

@@ -5,3 +5,7 @@ requests
 python-dotenv
 pypdf
 yfinance
+
+# Optional: libsql client for Turso-backed persistent cache. Only needed
+# in production when TURSO_DATABASE_URL is set. Locally sqlite3 is used.
+libsql-experimental

@@ -23,3 +23,9 @@ env/
 
 # yfinance / requests caches
 *.cache
+
+# SQLite cache (filings + LLM analyses + run history)
+cache.db
+cache.db-journal
+cache.db-wal
+cache.db-shm

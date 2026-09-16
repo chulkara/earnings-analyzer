@@ -1,9 +1,14 @@
 """
 analyzer.py - Fetches multiple SEC EDGAR filings and analyzes them with Groq AI.
 
+Now cache-aware:
+  - Raw filing content is cached by (cik, accession) so we hit EDGAR at most once.
+  - LLM outputs are cached by (content_hash, prompt_version, model) so we only
+    spend tokens when either the content or the prompt itself has changed.
+
 Flow:
-  ticker → CIK → 4 recent filings → text extraction
-         → full AI analysis (latest) + quick sentiment (older 3)
+  ticker → CIK → 4 recent filings → text extraction (cached)
+         → full AI analysis (latest, cached) + quick sentiment (older 3, cached)
          → combined result with history for chart
 """
 
@@ -13,6 +18,9 @@ import re
 import requests
 from groq import Groq
 
+from cache import get_cache
+import transcripts as transcripts_mod
+
 
 # SEC requires a User-Agent header on every request
 EDGAR_HEADERS = {
@@ -21,13 +29,74 @@ EDGAR_HEADERS = {
 }
 
 
+# ─── Model config ────────────────────────────────────────────────────────────
+MODEL = "llama-3.3-70b-versatile"
+
+
+# ─── Prompt constants + versions ─────────────────────────────────────────────
+# Bump the version string whenever you change a prompt.
+# The cache will treat old outputs as stale automatically.
+
+QUICK_SENTIMENT_PROMPT_VERSION = "v1"
+
+def _quick_sentiment_prompt(content: str, ticker: str, form: str, date: str) -> str:
+    excerpt = content[:4000]
+    return (
+        f'Analyze the financial sentiment of this SEC {form} for {ticker} (filed {date}).\n\n'
+        'Return ONLY this JSON (nothing else):\n'
+        '{"sentiment": "positive" or "neutral" or "negative", '
+        '"sentiment_score": number from -1.0 to 1.0, '
+        '"summary": "one sentence about key results"}\n\n'
+        f'Filing excerpt:\n{excerpt}'
+    )
+
+
+FULL_ANALYSIS_PROMPT_VERSION = "v2"  # v2: transcript-aware
+
+def _full_analysis_prompt(content: str, ticker: str, company_name: str,
+                           form: str, date: str,
+                           transcript_excerpt: str = "") -> str:
+    # Keep the LLM's context tight even though llama-3.3-70b has 128k
+    max_chars = 18000 if not transcript_excerpt else 12000
+    if len(content) > max_chars:
+        content = content[:max_chars] + "\n\n[Document truncated]"
+
+    transcript_section = ""
+    if transcript_excerpt:
+        transcript_section = (
+            "\n\nEARNINGS CALL TRANSCRIPT (same quarter — use for management tone, "
+            "analyst pushback, and forward-looking commentary):\n"
+            f"{transcript_excerpt}\n"
+        )
+
+    return f"""You are a financial analyst. Analyze this SEC {form} filing for {company_name} ({ticker}), filed {date}.
+
+FILING:
+{content}
+{transcript_section}
+Return ONLY a valid JSON object (no text before or after):
+{{
+  "sentiment": "positive" or "neutral" or "negative",
+  "sentiment_score": number from -1.0 to 1.0,
+  "summary": "2-3 sentence overview of key results and business developments",
+  "key_themes": [
+    {{"title": "Theme name", "description": "1-2 sentence explanation", "sentiment": "positive" or "neutral" or "negative"}}
+  ],
+  "management_tone": "Description of tone and confidence — favor call transcript evidence when available",
+  "key_quotes": ["significant direct quote from filing OR transcript (prefix transcript quotes with speaker name)"],
+  "guidance": ["forward-looking statement or guidance item"],
+  "risks": ["risk factor or concern mentioned"],
+  "analyst_concerns": ["question or skepticism from an analyst on the call, if a transcript was provided; otherwise []"],
+  "beats_estimates": true or false or null
+}}
+
+Include 3-5 key_themes, 2-4 key_quotes, 2-4 guidance items, 2-4 risks, and up to 3 analyst_concerns."""
+
+
 # ─── Step 1: Ticker → CIK ────────────────────────────────────────────────────
 
 def get_cik_for_ticker(ticker: str) -> tuple:
-    """
-    Looks up a company's CIK number using SEC's master company list.
-    Returns (cik_padded_10_digits, company_name).
-    """
+    """Looks up a company's CIK number using SEC's master company list."""
     response = requests.get(
         "https://www.sec.gov/files/company_tickers.json",
         headers=EDGAR_HEADERS, timeout=15
@@ -49,11 +118,7 @@ def get_cik_for_ticker(ticker: str) -> tuple:
 # ─── Step 2: CIK → Multiple Filing Metadata ──────────────────────────────────
 
 def get_multiple_filing_infos(cik: str, count: int = 4) -> tuple:
-    """
-    Returns the last `count` distinct 8-K or 10-Q filings for a company.
-    Deduplicates by month so we don't pick up amendments of the same filing.
-    Returns (list_of_filing_dicts, company_name).
-    """
+    """Returns the last `count` distinct 8-K or 10-Q filings for a company."""
     url = f"https://data.sec.gov/submissions/CIK{cik}.json"
     response = requests.get(url, headers=EDGAR_HEADERS, timeout=15)
     if response.status_code != 200:
@@ -73,7 +138,6 @@ def get_multiple_filing_infos(cik: str, count: int = 4) -> tuple:
 
     for i, form in enumerate(forms):
         if form in ["8-K", "10-Q"]:
-            # Use year-month as dedup key (e.g. "2024-11")
             month_key = dates[i][:7]
             if month_key not in seen_months:
                 seen_months.add(month_key)
@@ -93,7 +157,7 @@ def get_multiple_filing_infos(cik: str, count: int = 4) -> tuple:
     return filings, company_name
 
 
-# ─── Step 3: Filing → Clean Text ─────────────────────────────────────────────
+# ─── Step 3: Filing → Clean Text (cached) ────────────────────────────────────
 
 def strip_html(raw_html: str) -> str:
     """Converts SEC HTML filing to clean plain text."""
@@ -108,8 +172,17 @@ def strip_html(raw_html: str) -> str:
     return raw_html.strip()
 
 
-def fetch_filing_text(cik: str, accession: str, primary_doc: str) -> str:
-    """Downloads the primary document of an SEC filing and returns clean text."""
+def fetch_filing_text(cik: str, accession: str, primary_doc: str,
+                      form: str = "", date: str = "") -> str:
+    """
+    Downloads the primary document of an SEC filing and returns clean text.
+    Cached: if we've already fetched this (cik, accession), returns from SQLite.
+    """
+    cache = get_cache()
+    cached = cache.get_filing(cik, accession)
+    if cached:
+        return cached["content"]
+
     acc_no_dashes = accession.replace("-", "")
     cik_int = int(cik)
     url = f"https://www.sec.gov/Archives/edgar/data/{cik_int}/{acc_no_dashes}/{primary_doc}"
@@ -121,11 +194,15 @@ def fetch_filing_text(cik: str, accession: str, primary_doc: str) -> str:
     raw = response.text
     ct = response.headers.get("Content-Type", "")
     if "html" in ct.lower() or primary_doc.endswith((".htm", ".html")):
-        return strip_html(raw)
-    return re.sub(r'\n{3,}', '\n\n', raw).strip()
+        text = strip_html(raw)
+    else:
+        text = re.sub(r'\n{3,}', '\n\n', raw).strip()
+
+    cache.put_filing(cik, accession, form, date, primary_doc, text)
+    return text
 
 
-# ─── AI Analysis ─────────────────────────────────────────────────────────────
+# ─── AI Analysis (cached) ────────────────────────────────────────────────────
 
 def _parse_json_response(raw: str) -> dict:
     """Strips markdown fences and parses JSON from a model response."""
@@ -143,45 +220,62 @@ def _parse_json_response(raw: str) -> dict:
 
 def quick_sentiment_analysis(content: str, ticker: str, form: str, date: str,
                               groq_key: str) -> dict:
-    """
-    Fast, minimal analysis — just sentiment score + one-line summary.
-    Used for the 3 older filings in the history chart.
-    """
+    """Fast sentiment for older filings. Cached by (content, prompt_version, model)."""
+    cache = get_cache()
+
+    prompt = _quick_sentiment_prompt(content, ticker, form, date)
+    cached = cache.get_analysis(prompt, QUICK_SENTIMENT_PROMPT_VERSION, MODEL)
+    if cached:
+        return {"date": date, "form": form, **cached}
+
     client = Groq(api_key=groq_key)
-    excerpt = content[:4000]
-
-    prompt = (
-        f'Analyze the financial sentiment of this SEC {form} for {ticker} (filed {date}).\n\n'
-        'Return ONLY this JSON (nothing else):\n'
-        '{"sentiment": "positive" or "neutral" or "negative", '
-        '"sentiment_score": number from -1.0 to 1.0, '
-        '"summary": "one sentence about key results"}\n\n'
-        f'Filing excerpt:\n{excerpt}'
-    )
-
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model=MODEL,
         messages=[{"role": "user", "content": prompt}],
         max_tokens=120,
         temperature=0.1,
     )
-
     result = _parse_json_response(response.choices[0].message.content)
-    return {
-        "date":            date,
-        "form":            form,
+
+    normalized = {
         "sentiment":       result.get("sentiment", "neutral"),
         "sentiment_score": float(result.get("sentiment_score", 0.0)),
         "summary":         result.get("summary", ""),
     }
+    cache.put_analysis(prompt, QUICK_SENTIMENT_PROMPT_VERSION, MODEL, normalized)
+    return {"date": date, "form": form, **normalized}
 
 
-def analyze_filing(filing: dict, groq_key: str) -> dict:
+def _try_transcript_for_filing(ticker: str, date: str) -> tuple:
     """
-    Full AI analysis of an SEC filing.
-    Used for the most recent filing to populate the whole dashboard.
+    Best-effort transcript lookup for the filing date.
+    Tries the mapped quarter, then the previous one (10-Q filings often
+    trail the earnings call by a few weeks).
+
+    Returns (excerpt_str, highlights_list, quarter_str) — all empty if none.
     """
-    client = Groq(api_key=groq_key)
+    if not transcripts_mod.is_configured():
+        return "", [], ""
+
+    q = transcripts_mod.quarter_for_date(date)
+    payload = transcripts_mod.fetch_transcript(ticker, q)
+    if not payload:
+        prev = transcripts_mod.previous_quarter(q)
+        payload = transcripts_mod.fetch_transcript(ticker, prev)
+        if payload:
+            q = prev
+
+    if not payload:
+        return "", [], ""
+
+    excerpt = transcripts_mod.summarize_for_llm(payload)
+    highlights = transcripts_mod.key_highlights(payload)
+    return excerpt, highlights, q
+
+
+def analyze_filing(filing: dict, groq_key: str, progress=None) -> dict:
+    """Full AI analysis of a single filing. Cached by (content, prompt_version, model)."""
+    cache = get_cache()
 
     ticker       = filing["symbol"]
     company_name = filing.get("company_name", ticker)
@@ -189,45 +283,35 @@ def analyze_filing(filing: dict, groq_key: str) -> dict:
     date         = filing["date"]
     content      = filing["content"]
 
-    # 128k context window on llama-3.3-70b-versatile, but keep prompt tight
-    max_chars = 18000
-    if len(content) > max_chars:
-        content = content[:max_chars] + "\n\n[Document truncated]"
+    if progress:
+        progress("Looking for matching earnings call transcript...")
+    transcript_excerpt, transcript_highlights, transcript_quarter = \
+        _try_transcript_for_filing(ticker, date)
 
-    prompt = f"""You are a financial analyst. Analyze this SEC {form} filing for {company_name} ({ticker}), filed {date}.
-
-FILING:
-{content}
-
-Return ONLY a valid JSON object (no text before or after):
-{{
-  "sentiment": "positive" or "neutral" or "negative",
-  "sentiment_score": number from -1.0 to 1.0,
-  "summary": "2-3 sentence overview of key results and business developments",
-  "key_themes": [
-    {{"title": "Theme name", "description": "1-2 sentence explanation", "sentiment": "positive" or "neutral" or "negative"}}
-  ],
-  "management_tone": "Description of tone and confidence level in the filing",
-  "key_quotes": ["significant direct quote or statement from the filing"],
-  "guidance": ["forward-looking statement or guidance item"],
-  "risks": ["risk factor or concern mentioned"],
-  "beats_estimates": true or false or null
-}}
-
-Include 3-5 key_themes, 2-3 key_quotes, 2-4 guidance items, 2-4 risks."""
-
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=2000,
-        temperature=0.3,
+    prompt = _full_analysis_prompt(
+        content, ticker, company_name, form, date, transcript_excerpt
     )
+    cached = cache.get_analysis(prompt, FULL_ANALYSIS_PROMPT_VERSION, MODEL)
+    if cached:
+        analysis = dict(cached)
+    else:
+        client = Groq(api_key=groq_key)
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=2200,
+            temperature=0.3,
+        )
+        analysis = _parse_json_response(response.choices[0].message.content)
+        cache.put_analysis(prompt, FULL_ANALYSIS_PROMPT_VERSION, MODEL, analysis)
 
-    analysis = _parse_json_response(response.choices[0].message.content)
-    analysis["ticker"]       = ticker
-    analysis["company_name"] = company_name
-    analysis["form"]         = form
-    analysis["date"]         = date
+    analysis["ticker"]                = ticker
+    analysis["company_name"]          = company_name
+    analysis["form"]                  = form
+    analysis["date"]                  = date
+    analysis["transcript_available"]  = bool(transcript_excerpt)
+    analysis["transcript_quarter"]    = transcript_quarter
+    analysis["transcript_highlights"] = transcript_highlights
     return analysis
 
 
@@ -254,11 +338,14 @@ def analyze_all_filings(ticker: str, groq_key: str, progress=None) -> dict:
     filing_infos, _ = get_multiple_filing_infos(cik, count=4)
     total = len(filing_infos)
 
-    # 3. Download text for each filing
+    # 3. Download text for each filing (cached where possible)
     filings_with_text = []
     for i, info in enumerate(filing_infos):
-        progress(f"Downloading {info['form']} ({info['date']})  —  {i + 1} of {total}")
-        text = fetch_filing_text(cik, info["accession"], info["primary_doc"])
+        progress(f"Loading {info['form']} ({info['date']})  —  {i + 1} of {total}")
+        text = fetch_filing_text(
+            cik, info["accession"], info["primary_doc"],
+            form=info["form"], date=info["date"],
+        )
         filings_with_text.append({
             **info,
             "symbol":       ticker,
@@ -269,7 +356,7 @@ def analyze_all_filings(ticker: str, groq_key: str, progress=None) -> dict:
     # 4. Full analysis of the most recent filing
     latest = filings_with_text[0]
     progress(f"AI analysis of latest {latest['form']}...")
-    full_analysis = analyze_filing(latest, groq_key)
+    full_analysis = analyze_filing(latest, groq_key, progress=progress)
 
     # 5. Quick sentiment for the older filings
     history = [{

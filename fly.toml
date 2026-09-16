@@ -1,0 +1,48 @@
+# Fly.io app config for earnings-analyzer.
+# Deploy: fly launch --no-deploy   (first time only)
+#         fly volumes create cache --size 1 --region <region>   # 1 GB, free tier
+#         fly secrets set GROQ_API_KEY=... ALPHAVANTAGE_API_KEY=... DEMO_TICKERS=AAPL,NVDA,TSLA,MSFT,JPM
+#         fly deploy
+# Custom domain (earnings.chulkara.com):
+#         fly certs add earnings.chulkara.com
+#         Then add a CNAME earnings → <app>.fly.dev on chulkara.com's DNS.
+
+app = "earnings-analyzer"
+primary_region = "iad"
+
+[build]
+
+[env]
+  PORT = "8080"
+  FLASK_ENV = "production"
+  # DEMO_TICKERS is set as a secret (comma-separated) so we can change it
+  # without redeploying; leave empty to allow every ticker.
+
+[[mounts]]
+  source = "cache"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"     # free tier — sleep when idle
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 25
+    soft_limit = 20
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/healthz"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
