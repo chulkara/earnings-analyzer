@@ -42,7 +42,7 @@ MODEL = "openai/gpt-oss-120b"
 # Bump the version string whenever you change a prompt.
 # The cache will treat old outputs as stale automatically.
 
-QUICK_SENTIMENT_PROMPT_VERSION = "v1"
+QUICK_SENTIMENT_PROMPT_VERSION = "v2"  # v2: gpt-oss-120b + json_object mode
 
 def _quick_sentiment_prompt(content: str, ticker: str, form: str, date: str) -> str:
     excerpt = content[:4000]
@@ -56,7 +56,7 @@ def _quick_sentiment_prompt(content: str, ticker: str, form: str, date: str) -> 
     )
 
 
-FULL_ANALYSIS_PROMPT_VERSION = "v2"  # v2: transcript-aware
+FULL_ANALYSIS_PROMPT_VERSION = "v3"  # v3: gpt-oss-120b + json_object mode
 
 def _full_analysis_prompt(content: str, ticker: str, company_name: str,
                            form: str, date: str,
@@ -210,17 +210,29 @@ def fetch_filing_text(cik: str, accession: str, primary_doc: str,
 # ─── AI Analysis (cached) ────────────────────────────────────────────────────
 
 def _parse_json_response(raw: str) -> dict:
-    """Strips markdown fences and parses JSON from a model response."""
+    """
+    Strips reasoning traces + markdown fences and parses JSON from a model
+    response. Handles gpt-oss-family reasoning models that emit
+    <think>...</think> blocks before the actual answer.
+    """
     clean = raw.strip()
+    # Strip any <think>...</think> reasoning traces (gpt-oss models).
+    clean = re.sub(r"<think>.*?</think>", "", clean, flags=re.DOTALL).strip()
+    # Strip markdown code fences (```json ... ``` or ``` ... ```).
     if clean.startswith("```"):
-        clean = "\n".join(clean.split("\n")[1:-1])
+        # Remove opening fence line and closing fence line.
+        lines = clean.split("\n")
+        if lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        clean = "\n".join(lines[1:]).strip()
     try:
         return json.loads(clean)
     except json.JSONDecodeError:
-        match = re.search(r'\{.*\}', clean, re.DOTALL)
+        # Last-resort: find the largest {...} block in the text.
+        match = re.search(r"\{.*\}", clean, re.DOTALL)
         if match:
             return json.loads(match.group())
-        raise ValueError("Model returned an unexpected format. Please try again.")
+        raise ValueError(f"Model returned an unexpected format. Preview: {clean[:200]!r}")
 
 
 def quick_sentiment_analysis(content: str, ticker: str, form: str, date: str,
@@ -237,8 +249,10 @@ def quick_sentiment_analysis(content: str, ticker: str, form: str, date: str,
     response = client.chat.completions.create(
         model=MODEL,
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=120,
+        max_tokens=200,
         temperature=0.1,
+        response_format={"type": "json_object"},
+        reasoning_effort="low",
     )
     result = _parse_json_response(response.choices[0].message.content)
 
@@ -304,8 +318,10 @@ def analyze_filing(filing: dict, groq_key: str, progress=None) -> dict:
         response = client.chat.completions.create(
             model=MODEL,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=2200,
+            max_tokens=3000,
             temperature=0.3,
+            response_format={"type": "json_object"},
+            reasoning_effort="low",
         )
         analysis = _parse_json_response(response.choices[0].message.content)
         cache.put_analysis(prompt, FULL_ANALYSIS_PROMPT_VERSION, MODEL, analysis)
