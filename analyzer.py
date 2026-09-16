@@ -30,7 +30,12 @@ EDGAR_HEADERS = {
 
 
 # ─── Model config ────────────────────────────────────────────────────────────
-MODEL = "llama-3.3-70b-versatile"
+# Groq deprecated llama-3.3-70b-versatile on 2026-08-16. Recommended
+# replacement per their deprecation docs is openai/gpt-oss-120b — same
+# analytical quality, faster inference. The model string is baked into
+# the LLM cache key, so switching invalidates old cached analyses
+# automatically (old rows harmlessly stay in the DB).
+MODEL = "openai/gpt-oss-120b"
 
 
 # ─── Prompt constants + versions ─────────────────────────────────────────────
