@@ -973,12 +973,19 @@
     }
 
     /* ─── Hero ─────────────────────────────────────────────────────── */
+    .brief-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1.5rem; flex-wrap: wrap;
+      margin-bottom: 3rem;
+    }
+    .brief-topbar-actions {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
     .brief-eyebrow {
       display: flex; align-items: center; gap: 12px;
       font-family: var(--font-mono);
       font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
       color: var(--accent);
-      margin-bottom: 3rem;
     }
     .brief-eyebrow-rule {
       display: inline-block; width: 32px; height: 1px; background: var(--accent);
@@ -1358,51 +1365,28 @@
       color: var(--text-2);
     }
 
-    /* ─── Byline ──────────────────────────────────────────────────── */
-    .brief-byline {
-      margin-top: 6rem;
-      padding-top: 2rem;
-      border-top: 1px solid var(--border-2);
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 2rem;
-      align-items: end;
-    }
-    @media (max-width: 720px) { .brief-byline { grid-template-columns: 1fr; } }
-    .brief-byline-meta {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--text-2);
-      margin-bottom: 0.4rem;
-    }
-    .brief-byline-attribution {
-      font-size: 0.82rem;
-      color: var(--text-2);
-    }
-    .brief-byline-attribution b {
-      color: var(--text); font-weight: 600;
-    }
-    .brief-byline-right { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+    /* ─── Share buttons (in topbar) ──────────────────────────────── */
     .brief-share-btn {
-      display: inline-flex; align-items: center; gap: 12px;
+      display: inline-flex; align-items: center; gap: 10px;
       background: var(--text); color: #F5F1EC;
-      border: 0; padding: 10px 16px; border-radius: 4px;
-      font-family: var(--font-body); font-size: 0.82rem; font-weight: 500;
+      border: 0; padding: 7px 12px; border-radius: 4px;
+      font-family: var(--font-body); font-size: 0.75rem; font-weight: 500;
       cursor: pointer;
       transition: background 0.15s, transform 0.05s;
+      line-height: 1.2;
     }
     .brief-share-btn:hover { background: var(--accent); }
     .brief-share-btn:active { transform: scale(0.98); }
     .brief-share-btn.copied { background: var(--green); animation: briefCopyPulse 0.4s ease; }
     @keyframes briefCopyPulse { 0% { transform: scale(1); } 40% { transform: scale(1.04); } 100% { transform: scale(1); } }
     .brief-share-url {
-      font-family: var(--font-mono); font-size: 0.75rem;
-      letter-spacing: 0.02em; opacity: 0.75;
+      font-family: var(--font-mono); font-size: 0.7rem;
+      letter-spacing: 0.02em; opacity: 0.7;
+      max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .brief-share-label {
-      font-weight: 600; letter-spacing: 0.04em;
+      font-weight: 600; letter-spacing: 0.04em; font-size: 0.72rem;
+      text-transform: uppercase;
     }
     .brief-share-btn-ghost {
       background: transparent; color: var(--text);
@@ -1410,6 +1394,30 @@
     }
     .brief-share-btn-ghost:hover {
       background: var(--text); color: #F5F1EC; border-color: var(--text);
+    }
+    @media (max-width: 640px) {
+      .brief-share-url { display: none; }
+    }
+
+    /* ─── Byline (bottom credit line) ────────────────────────────── */
+    .brief-byline {
+      margin-top: 6rem;
+      padding-top: 1.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .brief-byline-attribution {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    }
+    .brief-byline-attribution b {
+      color: var(--text); font-weight: 600;
+    }
+    .brief-byline-sep {
+      opacity: 0.35;
     }
 
     @media (max-width: 720px) {
@@ -1574,9 +1582,20 @@
 
     <!-- ─── Hero ──────────────────────────────────────────────────── -->
     <header class="brief-hero">
-      <div class="brief-eyebrow">
-        <span class="brief-eyebrow-rule"></span>
-        <span id="d-eyebrow-text">Filing Brief</span>
+      <div class="brief-topbar">
+        <div class="brief-eyebrow">
+          <span class="brief-eyebrow-rule"></span>
+          <span id="d-eyebrow-text">Filing Brief</span>
+        </div>
+        <div class="brief-topbar-actions">
+          <button class="brief-share-btn" id="btn-permalink" onclick="copyPermalink()" title="Copy shareable link">
+            <span class="brief-share-url" id="brief-share-url"></span>
+            <span class="brief-share-label">Copy</span>
+          </button>
+          <button class="brief-share-btn brief-share-btn-ghost" id="btn-compare" onclick="openCompareMenu()" title="Compare to a previous run">
+            ↔ Compare
+          </button>
+        </div>
       </div>
 
       <div class="brief-hero-grid">
@@ -1715,18 +1734,14 @@
 
     <!-- ─── Byline ───────────────────────────────────────────────── -->
     <footer class="brief-byline">
-      <div class="brief-byline-left">
-        <div class="brief-byline-meta" id="d-byline-meta"></div>
-        <div class="brief-byline-attribution">Analyzed by <b>Groq</b> · Stored via <b>Turso</b> · Karan Chulliparambil, 2026</div>
-      </div>
-      <div class="brief-byline-right">
-        <button class="brief-share-btn" id="btn-permalink" onclick="copyPermalink()">
-          <span class="brief-share-url" id="brief-share-url"></span>
-          <span class="brief-share-label">Copy link</span>
-        </button>
-        <button class="brief-share-btn brief-share-btn-ghost" id="btn-compare" onclick="openCompareMenu()">
-          Compare to previous
-        </button>
+      <div class="brief-byline-attribution">
+        <span id="d-byline-meta"></span>
+        <span class="brief-byline-sep">·</span>
+        Analyzed by <b>Groq</b>
+        <span class="brief-byline-sep">·</span>
+        Stored via <b>Turso</b>
+        <span class="brief-byline-sep">·</span>
+        Karan Chulliparambil, 2026
       </div>
     </footer>
 
