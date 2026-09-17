@@ -109,14 +109,15 @@
       align-items: center;
       padding: 0 2rem;
       gap: 2rem;
+      background: rgba(245,241,236,0.82);
+      backdrop-filter: blur(12px);
       border-bottom: 1px solid transparent;
-      transition: background 0.3s, border-color 0.3s;
+      transition: background 0.25s, border-color 0.25s;
     }
 
     body.has-results nav {
-      background: rgba(245,241,236,0.92);
-      backdrop-filter: blur(16px);
-      border-bottom-color: var(--border-2);
+      background: rgba(245,241,236,0.94);
+      border-bottom-color: var(--border);
     }
 
     .nav-logo {
@@ -472,36 +473,40 @@
     }
 
     .feature-num {
-      font-family: var(--font-display);
-      font-weight: 800;
-      font-size: 0.75rem;
-      letter-spacing: 0.12em;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
       color: var(--accent);
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
     }
 
     .feature-icon {
-      font-size: 1.5rem;
+      width: 36px;
+      height: 36px;
       margin-bottom: 1rem;
-      opacity: 0.7;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+    .feature-icon svg { width: 100%; height: 100%; stroke: currentColor; stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
     .feature-title {
       font-family: var(--font-display);
-      font-weight: 800;
-      font-size: 1.25rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: -0.01em;
       margin-bottom: 0.75rem;
       color: var(--text);
-      line-height: 1.15;
+      line-height: 1.2;
     }
 
     .feature-desc {
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       color: var(--text-2);
-      line-height: 1.65;
-      font-weight: 300;
+      line-height: 1.55;
+      font-weight: 400;
     }
 
     /* ── Dashboard ───────────────────────────────────────────── */
@@ -954,6 +959,465 @@
     }
 
     #errorToast.active { display: block; }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       THE BRIEF — editorial layout system
+    ═══════════════════════════════════════════════════════════════════ */
+    .brief { display: none; padding-top: 90px; padding-bottom: 120px; }
+    body.has-results .brief { display: block; }
+
+    .brief-wrap {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* ─── Hero ─────────────────────────────────────────────────────── */
+    .brief-eyebrow {
+      display: flex; align-items: center; gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 3rem;
+    }
+    .brief-eyebrow-rule {
+      display: inline-block; width: 32px; height: 1px; background: var(--accent);
+    }
+
+    .brief-hero-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 3rem;
+      align-items: end;
+      margin-bottom: 2.5rem;
+      padding-bottom: 3rem;
+      border-bottom: 1px solid var(--border-2);
+    }
+
+    .brief-company {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: 0.95;
+      letter-spacing: -0.045em;
+      color: var(--text);
+      margin: 0 0 0.6rem 0;
+    }
+    .brief-ticker {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      letter-spacing: 0.24em;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .brief-meta {
+      font-size: 0.85rem;
+      color: var(--text-2);
+      display: flex; gap: 0.6rem; align-items: center;
+    }
+    .brief-meta-dot { opacity: 0.4; }
+    #d-form-tag {
+      font-weight: 600;
+      color: var(--text);
+      padding: 3px 9px;
+      background: rgba(30,50,220,0.08);
+      border-radius: 3px;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+    }
+
+    .brief-score {
+      text-align: right;
+      min-width: 200px;
+    }
+    .brief-score-num {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      font-size: clamp(3rem, 7vw, 5rem);
+      line-height: 1;
+      letter-spacing: -0.035em;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 0.5rem;
+    }
+    .brief-score-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: -0.005em;
+      margin-bottom: 0.5rem;
+    }
+    .brief-score-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--text-3);
+      position: relative;
+    }
+    .brief-score-dot.positive { background: var(--green); box-shadow: 0 0 0 4px rgba(22,163,74,0.14); }
+    .brief-score-dot.negative { background: var(--red);   box-shadow: 0 0 0 4px rgba(220,38,38,0.14); }
+    .brief-score-dot.neutral  { background: var(--amber); box-shadow: 0 0 0 4px rgba(217,119,6,0.14); }
+    .brief-score.positive #d-score-word { color: var(--green); }
+    .brief-score.negative #d-score-word { color: var(--red); }
+    .brief-score.neutral  #d-score-word { color: var(--amber); }
+    .brief-score-scale {
+      font-family: var(--font-mono);
+      font-size: 0.68rem; letter-spacing: 0.14em;
+      color: var(--text-2); opacity: 0.7;
+      text-transform: uppercase;
+    }
+
+    .brief-headline {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: clamp(1.4rem, 3vw, 1.85rem);
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      max-width: 720px;
+      margin: 0 0 5rem 0;
+    }
+
+    /* ─── Section rhythm ──────────────────────────────────────────── */
+    .brief-section {
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      gap: 2rem;
+      margin-bottom: 5rem;
+      padding-top: 2.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .brief-section:first-of-type { border-top: 0; padding-top: 0; }
+    .brief-section-num {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      padding-top: 6px;
+    }
+    .brief-section-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.4rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 1.75rem;
+      line-height: 1.2;
+      display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    }
+    .brief-section-source, .brief-meta-source {
+      font-family: var(--font-mono);
+      font-weight: 400;
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      color: var(--text-2);
+      text-transform: uppercase;
+    }
+
+    /* ─── The Signal — editorial lead paragraph ──────────────────── */
+    .brief-lead {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 1.25rem;
+      line-height: 1.55;
+      letter-spacing: -0.005em;
+      color: var(--text);
+      max-width: 640px;
+    }
+    .brief-lead em {
+      font-style: italic;
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .brief-lead strong {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--text);
+      font-size: 0.95em;
+      padding: 1px 6px;
+      background: rgba(30,50,220,0.08);
+      border-radius: 3px;
+      font-variant-numeric: tabular-nums;
+    }
+    .brief-sparkline {
+      display: inline-block;
+      vertical-align: middle;
+      margin: 0 0.4em;
+      color: var(--accent);
+      width: 60px; height: 22px;
+    }
+    .brief-sparkline svg { width: 100%; height: 100%; overflow: visible; }
+    .brief-sparkline path { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    .brief-sparkline circle { fill: currentColor; }
+
+    /* ─── Management — pull quote + tone ─────────────────────────── */
+    .brief-management-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+    @media (max-width: 720px) { .brief-management-grid { grid-template-columns: 1fr; gap: 2rem; } }
+    .brief-pull-quote {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 1.65rem;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      padding-left: 1.25rem;
+      border-left: 2px solid var(--accent);
+      margin: 0;
+    }
+    .brief-pull-quote cite {
+      display: block;
+      margin-top: 1rem;
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 500;
+      font-style: normal;
+      letter-spacing: 0.02em;
+      color: var(--text-2);
+    }
+    .brief-tone-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+    .brief-tone p {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--text);
+      margin: 0 0 1.75rem 0;
+    }
+    .brief-guidance-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin-bottom: 0.75rem;
+    }
+    .brief-guidance ul { list-style: none; padding: 0; margin: 0; }
+    .brief-guidance li {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--text);
+      padding: 0.5rem 0 0.5rem 1.25rem;
+      position: relative;
+      border-top: 1px solid var(--border);
+    }
+    .brief-guidance li:first-child { border-top: 0; }
+    .brief-guidance li::before {
+      content: '→';
+      position: absolute; left: 0; top: 0.55rem;
+      color: var(--accent); font-weight: 700;
+    }
+
+    /* ─── Analyst pushback — vs. panels ──────────────────────────── */
+    .brief-vs-list { display: flex; flex-direction: column; gap: 2rem; }
+    .brief-vs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--border-2);
+      border-radius: 4px;
+      overflow: hidden;
+      background: #fff;
+    }
+    @media (max-width: 720px) { .brief-vs { grid-template-columns: 1fr; } }
+    .brief-vs-side { padding: 1.5rem 1.75rem; }
+    .brief-vs-side:first-child { border-right: 1px solid var(--border-2); }
+    @media (max-width: 720px) { .brief-vs-side:first-child { border-right: 0; border-bottom: 1px solid var(--border-2); } }
+    .brief-vs-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin-bottom: 0.9rem;
+    }
+    .brief-vs-side.analyst .brief-vs-label::before {
+      content: '↳ '; color: var(--red);
+    }
+    .brief-vs-side.mgmt .brief-vs-label::before {
+      content: '↳ '; color: var(--accent);
+    }
+    .brief-vs-side p {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      line-height: 1.5;
+      color: var(--text);
+      margin: 0;
+    }
+
+    /* ─── Market — FT-style ───────────────────────────────────────── */
+    .brief-market-empty {
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      color: var(--text-2);
+    }
+    .brief-market-chart {
+      margin-top: 2rem;
+      height: 260px;
+      position: relative;
+    }
+    .brief-market-window {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin-top: 1rem;
+    }
+
+    /* ─── Evidence — collapsed ────────────────────────────────────── */
+    .brief-evidence-toggle {
+      background: transparent; border: 0;
+      cursor: pointer;
+      text-align: left;
+      padding: 0;
+      font: inherit;
+      display: flex; align-items: center; gap: 1rem;
+      color: inherit;
+    }
+    .brief-evidence-toggle .brief-section-title { margin-bottom: 0; }
+    .brief-evidence-caret {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      color: var(--accent);
+      transition: transform 0.25s;
+    }
+    .brief-evidence-toggle[aria-expanded="true"] .brief-evidence-caret { transform: rotate(180deg); }
+    .brief-evidence-body[hidden] { display: none; }
+    .brief-evidence-body {
+      margin-top: 2rem;
+      animation: briefFadeIn 0.35s ease;
+    }
+    @keyframes briefFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .brief-evidence-grid, .brief-evidence-trades {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      padding-bottom: 2rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .brief-evidence-trades {
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 0; padding-bottom: 0; margin-bottom: 0;
+    }
+    @media (max-width: 720px) {
+      .brief-evidence-grid, .brief-evidence-trades { grid-template-columns: 1fr; }
+    }
+    .brief-evidence-col {
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .brief-evidence-col ul { list-style: none; padding: 0; margin: 0; }
+    .brief-evidence-col ul li {
+      padding: 0.55rem 0 0.55rem 1rem;
+      border-top: 1px solid var(--border);
+      position: relative;
+    }
+    .brief-evidence-col ul li:first-child { border-top: 0; }
+    .brief-evidence-col ul li::before {
+      content: '·'; position: absolute; left: 0; top: 0.35rem;
+      color: var(--accent); font-weight: 800; font-size: 1.4rem; line-height: 1;
+    }
+    .brief-evidence-col .brief-theme {
+      padding: 0.75rem 0;
+      border-top: 1px solid var(--border);
+    }
+    .brief-evidence-col .brief-theme:first-child { border-top: 0; padding-top: 0; }
+    .brief-evidence-col .brief-theme-title {
+      font-weight: 600; font-size: 0.92rem; color: var(--text); margin-bottom: 0.3rem;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .brief-evidence-col .brief-theme-title::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--text-3);
+    }
+    .brief-evidence-col .brief-theme.positive .brief-theme-title::before { background: var(--green); }
+    .brief-evidence-col .brief-theme.negative .brief-theme-title::before { background: var(--red); }
+    .brief-evidence-col .brief-theme.neutral  .brief-theme-title::before { background: var(--amber); }
+    .brief-evidence-col .brief-theme-desc { color: var(--text-2); font-size: 0.85rem; }
+    .brief-evidence-col blockquote {
+      margin: 0 0 1rem 0; padding-left: 0.85rem;
+      border-left: 2px solid var(--border-2);
+      font-style: italic; font-size: 0.88rem; line-height: 1.5;
+      color: var(--text);
+    }
+    .brief-loading-inline {
+      font-family: var(--font-mono); font-size: 0.72rem;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-2);
+    }
+
+    /* ─── Byline ──────────────────────────────────────────────────── */
+    .brief-byline {
+      margin-top: 6rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-2);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 2rem;
+      align-items: end;
+    }
+    @media (max-width: 720px) { .brief-byline { grid-template-columns: 1fr; } }
+    .brief-byline-meta {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin-bottom: 0.4rem;
+    }
+    .brief-byline-attribution {
+      font-size: 0.82rem;
+      color: var(--text-2);
+    }
+    .brief-byline-attribution b {
+      color: var(--text); font-weight: 600;
+    }
+    .brief-byline-right { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+    .brief-share-btn {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--text); color: #F5F1EC;
+      border: 0; padding: 10px 16px; border-radius: 4px;
+      font-family: var(--font-body); font-size: 0.82rem; font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.05s;
+    }
+    .brief-share-btn:hover { background: var(--accent); }
+    .brief-share-btn:active { transform: scale(0.98); }
+    .brief-share-btn.copied { background: var(--green); animation: briefCopyPulse 0.4s ease; }
+    @keyframes briefCopyPulse { 0% { transform: scale(1); } 40% { transform: scale(1.04); } 100% { transform: scale(1); } }
+    .brief-share-url {
+      font-family: var(--font-mono); font-size: 0.75rem;
+      letter-spacing: 0.02em; opacity: 0.75;
+    }
+    .brief-share-label {
+      font-weight: 600; letter-spacing: 0.04em;
+    }
+    .brief-share-btn-ghost {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border-2);
+    }
+    .brief-share-btn-ghost:hover {
+      background: var(--text); color: #F5F1EC; border-color: var(--text);
+    }
+
+    @media (max-width: 720px) {
+      .brief-hero-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .brief-score { text-align: left; }
+      .brief-section { grid-template-columns: 1fr; gap: 0.5rem; }
+      .brief-section-num { padding-top: 0; margin-bottom: 1rem; }
+    }
   </style>
 </head>
 <body>
@@ -1073,27 +1537,27 @@
     <div class="features-grid">
       <div class="feature-cell">
         <div class="feature-num">01</div>
-        <div class="feature-icon">📄</div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h9l4 4v14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M16 3v5h5"/><path d="M10 12h7M10 16h7M10 8h3"/></svg></div>
         <div class="feature-title">SEC Filing Analysis</div>
-        <p class="feature-desc">AI reads your 10-Q and 8-K filings to extract sentiment, themes, and tone — no more manual parsing.</p>
+        <p class="feature-desc">AI reads every 10-Q and 8-K to surface sentiment, themes, and management tone — no manual parsing.</p>
       </div>
       <div class="feature-cell">
         <div class="feature-num">02</div>
-        <div class="feature-icon">📈</div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19h18"/><path d="M4 15l5-6 4 4 7-9"/><circle cx="9" cy="9" r="1"/><circle cx="13" cy="13" r="1"/></svg></div>
         <div class="feature-title">Price Reaction</div>
-        <p class="feature-desc">See exactly how the market reacted around the filing date with a 60-day price window and key stats.</p>
+        <p class="feature-desc">See exactly how the market reacted around the filing date — 60-day price window with the key stats.</p>
       </div>
       <div class="feature-cell">
         <div class="feature-num">03</div>
-        <div class="feature-icon">🏛</div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18"/><path d="M4 10h16v10H4z"/><path d="M6 10V6l6-3 6 3v4"/><path d="M8 14v3M12 14v3M16 14v3"/></svg></div>
         <div class="feature-title">Insider Trades</div>
         <p class="feature-desc">Track Form 4 filings from corporate insiders — who bought, who sold, and how much.</p>
       </div>
       <div class="feature-cell">
         <div class="feature-num">04</div>
-        <div class="feature-icon">🏦</div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M6 20V9l6-4 6 4v11"/><path d="M9 20v-6h6v6"/><path d="M9 9h6"/></svg></div>
         <div class="feature-title">Congressional Trades</div>
-        <p class="feature-desc">Monitor House member stock disclosures sourced directly from the House Clerk's official records.</p>
+        <p class="feature-desc">House member stock disclosures sourced directly from the House Clerk's official records.</p>
       </div>
     </div>
   </div>
@@ -1101,174 +1565,173 @@
 </div><!-- /emptyState -->
 
 <!-- ── Dashboard ──────────────────────────────────────────────────────────── -->
-<div id="dashboard">
-  <div class="dash-wrap">
+<!-- ─── The Brief ─────────────────────────────────────────────────────────
+     Editorial-style single-page filing brief. Replaces the previous
+     dashboard-grid layout. Renders inside body.has-results.
+─────────────────────────────────────────────────────────────────────── -->
+<article id="dashboard" class="brief">
+  <div class="brief-wrap">
 
-    <!-- Company header -->
-    <div class="co-header">
-      <div>
-        <div class="co-name" id="d-name"></div>
-        <div class="co-meta">
-          <span class="tag tag-accent" id="d-form"></span>
-          <span class="tag tag-muted"  id="d-date"></span>
-        </div>
+    <!-- ─── Hero ──────────────────────────────────────────────────── -->
+    <header class="brief-hero">
+      <div class="brief-eyebrow">
+        <span class="brief-eyebrow-rule"></span>
+        <span id="d-eyebrow-text">Filing Brief</span>
       </div>
-      <div id="d-pill"></div>
-      <div id="d-actions" class="d-actions" style="display:none;margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="d-action-btn" id="btn-permalink" onclick="copyPermalink()" title="Copy shareable link">🔗 Copy link</button>
-        <button class="d-action-btn" id="btn-compare"  onclick="openCompareMenu()" title="Compare to a previous run">↔ Compare to previous</button>
-      </div>
-    </div>
 
-    <!-- Metric cards -->
-    <div class="metrics-row">
-      <div class="metric-card">
-        <div class="metric-label">Sentiment</div>
-        <div class="metric-value" id="m-sentiment"></div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Score</div>
-        <div class="metric-value" id="m-score"></div>
-        <div class="metric-sub">−1.0 Bearish → +1.0 Bullish</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Filing Type</div>
-        <div class="metric-value" style="font-size:1.2rem" id="m-form"></div>
-        <div class="metric-sub" id="m-form-desc"></div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Filings Analyzed</div>
-        <div class="metric-value" id="m-count"></div>
-        <div class="metric-sub">quarters of history</div>
-      </div>
-    </div>
-
-    <!-- Charts row -->
-    <div class="charts-row">
-      <!-- Gauge -->
-      <div class="chart-card">
-        <div class="card-title">Current Sentiment</div>
-        <div class="gauge-canvas-wrap">
-          <canvas id="gaugeChart"></canvas>
-          <div class="gauge-center-text">
-            <div class="gauge-score-num" id="gauge-num"></div>
-            <div class="gauge-score-lbl" id="gauge-lbl"></div>
+      <div class="brief-hero-grid">
+        <div class="brief-name">
+          <h1 class="brief-company" id="d-name"></h1>
+          <div class="brief-ticker" id="d-ticker"></div>
+          <div class="brief-meta">
+            <span id="d-form-tag"></span>
+            <span class="brief-meta-dot">·</span>
+            <span id="d-date"></span>
           </div>
         </div>
-        <div class="gauge-axis">
-          <span>Bearish −1</span>
-          <span>Neutral 0</span>
-          <span>+1 Bullish</span>
+
+        <div class="brief-score" id="d-score-block">
+          <div class="brief-score-num" id="d-score-num">0.00</div>
+          <div class="brief-score-label" id="d-score-lbl">
+            <span class="brief-score-dot" id="d-score-dot"></span>
+            <span id="d-score-word">Neutral</span>
+          </div>
+          <div class="brief-score-scale">−1.0 Bearish · +1.0 Bullish</div>
         </div>
       </div>
 
-      <!-- Line chart -->
-      <div class="chart-card">
-        <div class="card-title">Sentiment History</div>
-        <div class="history-canvas-wrap">
-          <canvas id="historyChart"></canvas>
+      <p class="brief-headline" id="d-headline"></p>
+    </header>
+
+    <!-- ─── 01 · The Signal ───────────────────────────────────────── -->
+    <section class="brief-section brief-signal-section">
+      <div class="brief-section-num">01</div>
+      <div class="brief-section-body">
+        <div class="brief-section-title">The Signal</div>
+        <p class="brief-lead" id="d-signal-lead"></p>
+      </div>
+    </section>
+
+    <!-- ─── 02 · Management ───────────────────────────────────────── -->
+    <section class="brief-section brief-management-section">
+      <div class="brief-section-num">02</div>
+      <div class="brief-section-body">
+        <div class="brief-section-title">What Management Told You</div>
+
+        <div class="brief-management-grid">
+          <blockquote class="brief-pull-quote" id="d-pull-quote"></blockquote>
+          <div class="brief-tone">
+            <div class="brief-tone-label">Tone Analysis</div>
+            <p id="d-tone"></p>
+            <div class="brief-guidance" id="d-guidance-block">
+              <div class="brief-guidance-label">Forward Guidance</div>
+              <ul id="d-guidance"></ul>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Summary -->
-    <div class="card">
-      <div class="card-title">Summary</div>
-      <p id="d-summary"></p>
-    </div>
-
-    <!-- Themes -->
-    <div class="section-label">Key Themes</div>
-    <div class="themes-grid" id="d-themes"></div>
-
-    <!-- Tone + Quotes -->
-    <div class="two-col">
-      <div class="card">
-        <div class="card-title">Management Tone</div>
-        <p id="d-tone"></p>
-      </div>
-      <div class="card">
-        <div class="card-title">Key Quotes</div>
-        <div id="d-quotes"></div>
-      </div>
-    </div>
-
-    <!-- Guidance + Risks -->
-    <div class="two-col">
-      <div class="card">
-        <div class="card-title">Forward Guidance</div>
-        <ul class="item-list" id="d-guidance"></ul>
-      </div>
-      <div class="card">
-        <div class="card-title">Risks &amp; Concerns</div>
-        <ul class="item-list" id="d-risks"></ul>
-      </div>
-    </div>
-
-    <!-- Earnings call transcript highlights (only when AlphaVantage returned one) -->
-    <div class="card" id="transcript-card" style="display:none">
-      <div class="card-title">Earnings Call — <span id="transcript-quarter" style="color:var(--text-3);font-weight:400;letter-spacing:0;text-transform:none"></span></div>
-      <div id="transcript-highlights"></div>
-    </div>
-
-    <!-- Analyst concerns (only when transcript populated the field) -->
-    <div class="card" id="analyst-concerns-card" style="display:none">
-      <div class="card-title">Analyst Pushback</div>
-      <ul class="item-list" id="d-concerns"></ul>
-    </div>
-
-    <!-- Stock Price Reaction -->
-    <div class="price-reaction-card">
-      <div class="card-title">
-        Stock Price Reaction
-        <span id="price-window-label" style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0"></span>
-      </div>
-
-      <div class="price-stats-row" id="price-stats-row">
-        <div class="price-stat">
-          <div class="price-stat-label">Price on Filing Date</div>
-          <div class="price-stat-value" id="ps-on-date">—</div>
+    <!-- ─── 03 · Analyst Pushback (only when transcript available) ── -->
+    <section class="brief-section brief-pushback-section" id="pushback-section" hidden>
+      <div class="brief-section-num">03</div>
+      <div class="brief-section-body">
+        <div class="brief-section-title">
+          What Analysts Pushed Back On
+          <span class="brief-section-source" id="d-pushback-source"></span>
         </div>
-        <div class="price-stat">
-          <div class="price-stat-label">Price 30 Days Later</div>
-          <div class="price-stat-value" id="ps-30-later">—</div>
+        <div class="brief-vs-list" id="d-pushback-list"></div>
+      </div>
+    </section>
+
+    <!-- ─── 04 · The Market ───────────────────────────────────────── -->
+    <section class="brief-section brief-market-section">
+      <div class="brief-section-num" id="d-market-num">03</div>
+      <div class="brief-section-body">
+        <div class="brief-section-title">What The Market Said</div>
+        <p class="brief-lead" id="d-market-lead">
+          <span id="price-empty" class="brief-market-empty">Loading price data…</span>
+        </p>
+        <div class="brief-market-chart">
+          <canvas id="priceChart"></canvas>
         </div>
-        <div class="price-stat">
-          <div class="price-stat-label">Change After Filing</div>
-          <div class="price-stat-value" id="ps-pct-change">—</div>
+        <div class="brief-market-window" id="price-window-label"></div>
+      </div>
+    </section>
+
+    <!-- Hidden compat: keep JS references working for the old dashboard fields -->
+    <div style="display:none" aria-hidden="true">
+      <span id="ps-on-date"></span><span id="ps-30-later"></span><span id="ps-pct-change"></span>
+      <span id="m-sentiment"></span><span id="m-score"></span><span id="m-form"></span>
+      <span id="m-form-desc"></span><span id="m-count"></span>
+      <span id="d-summary"></span><span id="d-form"></span><span id="d-pill"></span>
+      <div id="d-themes"></div><div id="d-quotes"></div><div id="d-risks"></div>
+      <div id="d-concerns"></div><div id="transcript-quarter"></div>
+      <div id="transcript-highlights"></div><div id="transcript-card"></div>
+      <div id="analyst-concerns-card"></div>
+      <div id="gauge-num"></div><div id="gauge-lbl"></div>
+      <div id="price-stats-row"></div><div id="price-chart-wrap"></div>
+    </div>
+
+    <!-- ─── 05 · The Evidence (progressive disclosure) ───────────── -->
+    <section class="brief-section brief-evidence-section">
+      <div class="brief-section-num" id="d-evidence-num">04</div>
+      <div class="brief-section-body">
+        <button class="brief-evidence-toggle" type="button"
+                aria-expanded="false" aria-controls="evidence-body"
+                onclick="toggleEvidence()">
+          <span class="brief-section-title">The Evidence</span>
+          <span class="brief-evidence-caret">↓</span>
+        </button>
+        <div class="brief-evidence-body" id="evidence-body" hidden>
+          <div class="brief-evidence-grid">
+            <div class="brief-evidence-col">
+              <div class="brief-tone-label">Key Themes</div>
+              <div id="d-themes-brief"></div>
+            </div>
+            <div class="brief-evidence-col">
+              <div class="brief-tone-label">Risks &amp; Concerns</div>
+              <ul id="d-risks-brief"></ul>
+            </div>
+            <div class="brief-evidence-col">
+              <div class="brief-tone-label">Additional Quotes</div>
+              <div id="d-quotes-brief"></div>
+            </div>
+          </div>
+
+          <div class="brief-evidence-trades">
+            <div class="brief-evidence-col">
+              <div class="brief-tone-label">Insider Trades <span class="brief-meta-source">SEC Form 4</span></div>
+              <div id="insider-wrap"><div class="brief-loading-inline">Loading…</div></div>
+            </div>
+            <div class="brief-evidence-col">
+              <div class="brief-tone-label">Congressional Trades <span class="brief-meta-source">House Clerk</span></div>
+              <div id="congress-wrap"><div class="brief-loading-inline">Loading…</div></div>
+            </div>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div class="price-chart-wrap" id="price-chart-wrap">
-        <div class="price-empty" id="price-empty">Loading price data…</div>
-        <canvas id="priceChart" style="display:none"></canvas>
+    <!-- ─── Byline ───────────────────────────────────────────────── -->
+    <footer class="brief-byline">
+      <div class="brief-byline-left">
+        <div class="brief-byline-meta" id="d-byline-meta"></div>
+        <div class="brief-byline-attribution">Analyzed by <b>Groq</b> · Stored via <b>Turso</b> · Karan Chulliparambil, 2026</div>
       </div>
-    </div>
+      <div class="brief-byline-right">
+        <button class="brief-share-btn" id="btn-permalink" onclick="copyPermalink()">
+          <span class="brief-share-url" id="brief-share-url"></span>
+          <span class="brief-share-label">Copy link</span>
+        </button>
+        <button class="brief-share-btn brief-share-btn-ghost" id="btn-compare" onclick="openCompareMenu()">
+          Compare to previous
+        </button>
+      </div>
+    </footer>
 
-    <!-- Insider Trades -->
-    <div class="trades-section card">
-      <div class="card-title">
-        Insider Trades
-        <span style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0">— SEC Form 4</span>
-      </div>
-      <div class="trades-table-wrap" id="insider-wrap">
-        <div class="trades-loading">Loading insider trades…</div>
-      </div>
-    </div>
-
-    <!-- Congressional Trades -->
-    <div class="trades-section card">
-      <div class="card-title">
-        Congressional Trades
-        <span style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0">— House Clerk Disclosures</span>
-      </div>
-      <div class="trades-table-wrap" id="congress-wrap">
-        <div class="trades-loading">Loading congressional trades…</div>
-      </div>
-    </div>
-
-  </div><!-- /dash-wrap -->
-</div><!-- /dashboard -->
+  </div>
+</article>
 
 <!-- Diff comparison modal -->
 <div id="diff-modal">
@@ -1578,86 +2041,246 @@ function buildHistoryChart(history) {
 }
 
 /* ── Render results ──────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════
+   renderDashboard — editorial "Filing Brief" renderer.
+   Same signature and data contract as before; the layout underneath is
+   redone as a magazine-style page instead of a card grid.
+══════════════════════════════════════════════════════════════════════ */
 function renderDashboard(a) {
   _currentRunId = a.run_id || null;
-  $('d-actions').style.display = _currentRunId ? 'flex' : 'none';
   const score     = parseFloat(a.sentiment_score) || 0;
   const sentiment = a.sentiment || 'neutral';
-  const color     = sentimentColor(sentiment);
 
-  // Company header
-  $('d-name').textContent = a.company_name
-    ? `${a.company_name} · ${a.ticker}`
-    : a.ticker;
-  $('d-form').textContent = a.form || '—';
-  $('d-date').textContent = a.date || '—';
+  // ── Hero ─────────────────────────────────────────────────────────
+  $('d-eyebrow-text').textContent = `Filing Brief · ${a.form || '10-Q'} · ${a.date || ''}`;
+  $('d-name').textContent   = a.company_name || a.ticker;
+  $('d-ticker').textContent = a.ticker || '';
+  $('d-form-tag').textContent = a.form || '—';
+  $('d-date').textContent     = a.date ? formatBriefDate(a.date) : '—';
 
-  const pillCls   = `sentiment-pill pill-${sentiment}`;
-  const pillEmoji = sentiment === 'positive' ? '▲' : sentiment === 'negative' ? '▼' : '◆';
-  $('d-pill').innerHTML = `<span class="${pillCls}">${pillEmoji} ${capitalize(sentiment)}</span>`;
+  // Sentiment score block
+  const scoreBlock = $('d-score-block');
+  scoreBlock.className = `brief-score ${sentiment}`;
+  const dot = $('d-score-dot');
+  if (dot) dot.className = `brief-score-dot ${sentiment}`;
+  $('d-score-word').textContent = capitalize(sentiment);
+  animateCountUp($('d-score-num'), score);
 
-  // Metric cards
-  $('m-sentiment').textContent = capitalize(sentiment);
-  $('m-sentiment').className   = `metric-value ${sentiment}`;
+  // Editorial one-sentence headline
+  $('d-headline').textContent = briefHeadline(a);
 
-  const scoreStr = score >= 0 ? `+${score.toFixed(2)}` : score.toFixed(2);
-  $('m-score').textContent = scoreStr;
-  $('m-score').className   = `metric-value ${sentiment}`;
+  // ── 01 · The Signal — lead paragraph with inline sparkline ────────
+  const signalLead = $('d-signal-lead');
+  signalLead.innerHTML = signalParagraph(a);
 
-  $('m-form').textContent      = a.form || '—';
-  $('m-form-desc').textContent = a.form === '10-Q' ? 'Quarterly report' : 'Current report';
-
-  const histLen = (a.history || []).length;
-  $('m-count').textContent = histLen;
-
-  // Charts
-  buildGauge(score, sentiment);
-  buildHistoryChart(a.history);
-
-  // Summary
-  $('d-summary').textContent = a.summary || '';
-
-  // Themes
-  const themesEl = $('d-themes');
-  themesEl.innerHTML = '';
-  (a.key_themes || []).forEach(t => {
-    const el = document.createElement('div');
-    el.className = `theme-card ${t.sentiment || 'neutral'}`;
-    el.innerHTML = `
-      <div class="theme-title">${esc(t.title)}</div>
-      <div class="theme-desc">${esc(t.description)}</div>`;
-    themesEl.appendChild(el);
-  });
-
-  // Tone
+  // ── 02 · Management — pull quote + running tone + guidance ────────
+  const rawQuote = pickPullQuote(a);
+  if (rawQuote) {
+    const [text, speaker] = splitQuoteAndSpeaker(rawQuote);
+    $('d-pull-quote').innerHTML = `&ldquo;${esc(text)}&rdquo;${speaker ? `<cite>— ${esc(speaker)}</cite>` : ''}`;
+  } else {
+    $('d-pull-quote').innerHTML = '';
+    $('d-pull-quote').style.display = 'none';
+  }
   $('d-tone').textContent = a.management_tone || '';
 
-  // Quotes
-  $('d-quotes').innerHTML = (a.key_quotes || [])
-    .map(q => `<blockquote>"${esc(q)}"</blockquote>`)
-    .join('');
+  const guidance = a.guidance || [];
+  if (guidance.length) {
+    $('d-guidance').innerHTML = guidance.slice(0, 3)
+      .map(g => `<li>${esc(g)}</li>`).join('');
+    $('d-guidance-block').style.display = '';
+  } else {
+    $('d-guidance-block').style.display = 'none';
+  }
 
-  // Guidance
-  $('d-guidance').innerHTML = (a.guidance || [])
-    .map(g => `<li><span class="bullet bullet-green"></span>${esc(g)}</li>`)
-    .join('');
+  // ── 03 · Analyst pushback (only if transcript surfaced concerns) ──
+  const concerns = a.analyst_concerns || [];
+  const pushbackSection = $('pushback-section');
+  if (a.transcript_available && concerns.length) {
+    pushbackSection.hidden = false;
+    $('d-pushback-source').textContent = `Earnings call · ${a.transcript_quarter || ''}`;
+    // Try to pair each concern with a management line from key_quotes.
+    // If we don't have a natural match, just show the concern alone.
+    const mgmtLines = (a.key_quotes || [])
+      .map(q => splitQuoteAndSpeaker(q)[0])
+      .filter(Boolean);
+    $('d-pushback-list').innerHTML = concerns.slice(0, 3).map((c, i) => `
+      <div class="brief-vs">
+        <div class="brief-vs-side analyst">
+          <div class="brief-vs-label">Analyst pushed</div>
+          <p>${esc(c)}</p>
+        </div>
+        <div class="brief-vs-side mgmt">
+          <div class="brief-vs-label">Management said</div>
+          <p>${esc(mgmtLines[i] || (a.management_tone || 'Not directly addressed on the call.'))}</p>
+        </div>
+      </div>`).join('');
+    // Renumber the market/evidence sections when pushback is visible
+    $('d-market-num').textContent   = '04';
+    $('d-evidence-num').textContent = '05';
+  } else {
+    pushbackSection.hidden = true;
+    $('d-market-num').textContent   = '03';
+    $('d-evidence-num').textContent = '04';
+  }
 
-  // Risks
-  $('d-risks').innerHTML = (a.risks || [])
-    .map(r => `<li><span class="bullet bullet-red"></span>${esc(r)}</li>`)
-    .join('');
+  // ── 04 · Evidence (progressive disclosure — themes / risks / quotes) ─
+  const themesEl = $('d-themes-brief');
+  themesEl.innerHTML = (a.key_themes || []).map(t => `
+    <div class="brief-theme ${t.sentiment || 'neutral'}">
+      <div class="brief-theme-title">${esc(t.title || '')}</div>
+      <div class="brief-theme-desc">${esc(t.description || '')}</div>
+    </div>`).join('');
 
-  // Transcript + analyst concerns
-  renderTranscript(a);
+  $('d-risks-brief').innerHTML = (a.risks || [])
+    .map(r => `<li>${esc(r)}</li>`).join('');
 
-  // Show dashboard
+  const extraQuotes = (a.key_quotes || []).slice(rawQuote ? 1 : 0);
+  $('d-quotes-brief').innerHTML = extraQuotes.length
+    ? extraQuotes.map(q => {
+        const [text, speaker] = splitQuoteAndSpeaker(q);
+        return `<blockquote>&ldquo;${esc(text)}&rdquo;${speaker ? `<div style="font-size:.72rem;color:var(--text-2);margin-top:6px">— ${esc(speaker)}</div>` : ''}</blockquote>`;
+      }).join('')
+    : '<div class="brief-loading-inline">No additional quotes</div>';
+
+  // ── Byline ──────────────────────────────────────────────────────
+  $('d-byline-meta').textContent = `Filed ${a.date || ''} · Analysis regenerated ${new Date().toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'})}`;
+  if (_currentRunId) {
+    const shareURL = `${window.location.host}/r/${_currentRunId}`;
+    $('brief-share-url').textContent = shareURL.replace(/^www\./, '');
+  }
+
+  // ── Show ───────────────────────────────────────────────────────
   document.body.classList.add('has-results');
 
-  // Kick off async fetches
-  $('insider-wrap').innerHTML  = '<div class="trades-loading">Loading insider trades…</div>';
-  $('congress-wrap').innerHTML = '<div class="trades-loading">Loading congressional trades…</div>';
+  // Kick off async fetches (populates trades + price chart)
   loadTrades(a.ticker);
   loadPriceReaction(a.ticker, a.date);
+}
+
+/* ─── Brief helpers ─────────────────────────────────────────────────── */
+
+function formatBriefDate(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+}
+
+// Compose a single opinionated sentence for the hero.
+function briefHeadline(a) {
+  const s = a.sentiment || 'neutral';
+  const name = shortName(a.company_name || a.ticker);
+  const form = a.form || '10-Q';
+  const themes = (a.key_themes || []).map(t => (t.title || '').toLowerCase());
+  const positive = themes.find(t => /growth|momentum|expansion|record|strong|accelerat|beat/i.test(t));
+  const negative = themes.find(t => /decline|pressure|risk|weak|slow|headwind|miss|concern/i.test(t));
+
+  if (s === 'positive') {
+    if (negative) return `${name}'s ${form} reads confidently — but ${negative.replace(/^\w/, c => c.toLowerCase())} is the caveat.`;
+    return positive
+      ? `${name}'s ${form} leans into ${positive.replace(/^\w/, c => c.toLowerCase())}.`
+      : `${name}'s ${form} reads confidently across the board.`;
+  }
+  if (s === 'negative') {
+    if (positive) return `${name}'s ${form} carries ${negative || 'headwinds'} — even as ${positive.replace(/^\w/, c => c.toLowerCase())} holds.`;
+    return `${name}'s ${form} reads defensive.`;
+  }
+  return `${name}'s ${form} strikes a neutral tone.`;
+}
+
+function shortName(n) {
+  return (n || '').replace(/,?\s+(Inc\.|Corp\.|Corporation|Company|Co\.|Ltd\.|Group|Holdings).*$/i, '');
+}
+
+// The signal paragraph — includes an inline sparkline of the history.
+function signalParagraph(a) {
+  const hist = (a.history || []).slice().sort((x, y) => new Date(x.date) - new Date(y.date));
+  if (!hist.length) return esc(a.summary || '');
+
+  const first = hist[0];
+  const last  = hist[hist.length - 1];
+  const firstStr = fmtScore(first.sentiment_score);
+  const lastStr  = fmtScore(last.sentiment_score);
+
+  const delta = last.sentiment_score - first.sentiment_score;
+  const direction = delta > 0.05 ? 'climbed' : delta < -0.05 ? 'slipped' : 'held';
+  const spark = sparklineSVG(hist.map(h => h.sentiment_score));
+
+  const summary = a.summary || '';
+  // Pull the first sentence out of the summary as the "why".
+  const firstSentence = summary.split(/(?<=[.!?])\s+/)[0] || '';
+
+  return `Sentiment ${direction} from <strong>${firstStr}</strong> in ${formatBriefDate(first.date).replace(/,.*/, '')} ${spark} to <strong>${lastStr}</strong> today across ${hist.length} filings. ${esc(firstSentence)}`;
+}
+
+function fmtScore(n) {
+  const v = parseFloat(n) || 0;
+  return (v >= 0 ? '+' : '') + v.toFixed(2);
+}
+
+// Tiny inline sparkline SVG from a list of scores in [-1, 1].
+function sparklineSVG(scores) {
+  const n = scores.length;
+  if (n < 2) return '';
+  const w = 60, h = 22, pad = 2;
+  const stepX = (w - pad*2) / (n - 1);
+  const pts = scores.map((s, i) => {
+    const y = pad + ((1 - (s + 1) / 2)) * (h - pad*2);
+    return [pad + i * stepX, y];
+  });
+  const d = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const [lx, ly] = pts[pts.length - 1];
+  return `<span class="brief-sparkline"><svg viewBox="0 0 ${w} ${h}"><path d="${d}"/><circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="2"/></svg></span>`;
+}
+
+// Pick the strongest quote for the pull-quote treatment.
+// Prefers transcript highlights (executives), falls back to filing quotes.
+function pickPullQuote(a) {
+  const highs = (a.transcript_highlights || [])
+    .filter(h => {
+      const t = (h.title || '').toLowerCase();
+      return /ceo|cfo|coo|president|chief/i.test(t);
+    })
+    .sort((x, y) => Math.abs(parseFloat(y.sentiment) || 0) - Math.abs(parseFloat(x.sentiment) || 0));
+  if (highs.length) {
+    return `${highs[0].content} — ${highs[0].speaker}${highs[0].title ? ', ' + highs[0].title : ''}`;
+  }
+  return (a.key_quotes || [])[0] || null;
+}
+
+// If a quote string carries a "Speaker: text" prefix, split them apart.
+function splitQuoteAndSpeaker(raw) {
+  const s = String(raw || '').trim().replace(/^["“”'']+|["“”'']+$/g, '');
+  const emDash = s.split(/ — (?=[A-Z])/);
+  if (emDash.length === 2) return [emDash[0].replace(/^["“”'']+|["“”'']+$/g, ''), emDash[1]];
+  const colon = s.match(/^([A-Z][A-Za-z .'-]{1,60}):\s+(.*)$/);
+  if (colon) return [colon[2].replace(/^["“”'']+|["“”'']+$/g, ''), colon[1]];
+  return [s, null];
+}
+
+// Count-up numeric animation for the hero score.
+function animateCountUp(el, target) {
+  if (!el) return;
+  const start = 0, dur = 900, t0 = performance.now();
+  const sign  = target < 0 ? '−' : '+';
+  const abs   = Math.abs(target);
+  function frame(t) {
+    const p = Math.min(1, (t - t0) / dur);
+    const eased = 1 - Math.pow(1 - p, 3);
+    const val = (abs * eased).toFixed(2);
+    el.textContent = sign + val;
+    if (p < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+// Progressive disclosure for the Evidence section.
+function toggleEvidence() {
+  const btn  = document.querySelector('.brief-evidence-toggle');
+  const body = $('evidence-body');
+  const open = btn.getAttribute('aria-expanded') === 'true';
+  btn.setAttribute('aria-expanded', String(!open));
+  if (open) body.setAttribute('hidden', ''); else body.removeAttribute('hidden');
 }
 
 function capitalize(s) {
@@ -1773,11 +2396,13 @@ function buildPriceChart(prices, filingIdx) {
 }
 
 async function loadPriceReaction(ticker, filingDate) {
-  $('price-empty').textContent   = 'Loading price data…';
-  $('price-empty').style.display = 'block';
-  $('priceChart').style.display  = 'none';
-  ['ps-on-date', 'ps-30-later', 'ps-pct-change'].forEach(id => $(id).textContent = '—');
-  $('price-window-label').textContent = '';
+  const empty = $('price-empty');
+  const marketLead = $('d-market-lead');
+  const canvas = $('priceChart');
+  const windowLabel = $('price-window-label');
+  if (empty) { empty.textContent = 'Loading price data…'; empty.style.display = 'inline'; }
+  if (canvas) canvas.style.display = 'none';
+  if (windowLabel) windowLabel.textContent = '';
 
   try {
     const resp = await fetch(`/price/${encodeURIComponent(ticker)}/${encodeURIComponent(filingDate)}`);
@@ -1785,29 +2410,30 @@ async function loadPriceReaction(ticker, filingDate) {
     const { prices, stats } = await resp.json();
 
     if (!prices || prices.length === 0) {
-      $('price-empty').textContent = 'No price data available for this ticker.';
+      if (marketLead) marketLead.innerHTML = '<span class="brief-market-empty">No price data available for this ticker.</span>';
       return;
     }
 
-    if (stats && stats.price_on_date != null) {
-      $('ps-on-date').textContent  = '$' + stats.price_on_date.toFixed(2);
-      $('ps-30-later').textContent = '$' + stats.price_30_later.toFixed(2);
-
+    // Editorial one-sentence market lead
+    if (stats && stats.price_on_date != null && marketLead) {
       const pct   = stats.pct_change;
-      const color = pct >= 0 ? 'var(--green)' : 'var(--red)';
       const sign  = pct >= 0 ? '+' : '';
-      $('ps-pct-change').textContent = sign + pct.toFixed(2) + '%';
-      $('ps-pct-change').style.color = color;
+      const dir   = pct >= 0 ? 'rose' : 'fell';
+      const color = pct >= 0 ? 'var(--green)' : 'var(--red)';
+      marketLead.innerHTML = `In the 30 trading days after ${esc(ticker)} filed, the stock ${dir} <strong style="color:${color}">${sign}${pct.toFixed(2)}%</strong> — moving from <strong>$${stats.price_on_date.toFixed(2)}</strong> to <strong>$${stats.price_30_later.toFixed(2)}</strong>.`;
+    } else if (marketLead) {
+      marketLead.innerHTML = 'The filing predates the price window we can pull — chart shows what data yfinance has.';
     }
 
     const first = prices[0][0];
     const last  = prices[prices.length - 1][0];
-    $('price-window-label').textContent = `— ${first} to ${last}`;
+    if (windowLabel) windowLabel.textContent = `Price window · ${first} to ${last}`;
 
     buildPriceChart(prices, stats.filing_idx ?? null);
+    if (canvas) canvas.style.display = 'block';
 
   } catch (e) {
-    $('price-empty').textContent = 'Could not load price data.';
+    if (marketLead) marketLead.innerHTML = '<span class="brief-market-empty">Could not load price data.</span>';
   }
 }
 
@@ -1913,10 +2539,15 @@ function copyPermalink() {
   if (!_currentRunId) return;
   const url = `${window.location.origin}/r/${_currentRunId}`;
   navigator.clipboard.writeText(url).then(() => {
-    const btn = $('btn-permalink');
-    const orig = btn.textContent;
-    btn.textContent = '✓ Link copied';
-    setTimeout(() => { btn.textContent = orig; }, 1600);
+    const btn   = $('btn-permalink');
+    const label = btn.querySelector('.brief-share-label');
+    const orig  = label ? label.textContent : '';
+    btn.classList.add('copied');
+    if (label) label.textContent = '✓ Copied';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      if (label) label.textContent = orig || 'Copy link';
+    }, 1800);
   }).catch(() => showError('Could not copy — link: ' + url));
 }
 
