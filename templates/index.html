@@ -230,24 +230,42 @@
 
     .loading-card {
       background: var(--card);
-      border: 1px solid var(--border-2);
-      border-radius: var(--radius-lg);
-      padding: 2.5rem 3rem;
-      width: 440px;
-      max-width: 90vw;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2.75rem 3rem 2.5rem;
+      width: 480px;
+      max-width: 92vw;
+      box-shadow: 0 24px 60px rgba(10,14,26,0.06);
+      position: relative;
+    }
+    .loading-card::before {
+      content: 'BRIEF';
+      position: absolute;
+      top: 1.25rem; right: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.28em;
+      color: var(--accent);
     }
 
     .loading-card .l-title {
       font-family: var(--font-display);
       font-weight: 800;
-      font-size: 1.4rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-bottom: 0.25rem;
+      font-size: 1.5rem;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.35rem;
+      color: var(--text);
+      line-height: 1.15;
     }
+    .loading-card .l-title::after {
+      content: '·'; color: var(--accent);
+      display: inline-block; margin-left: 0.35rem;
+      animation: briefBlink 1.4s ease-in-out infinite;
+    }
+    @keyframes briefBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
 
     .loading-card .l-sub {
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       color: var(--text-2);
       margin-bottom: 1.75rem;
     }
@@ -255,32 +273,31 @@
     .progress-bar-wrap {
       height: 2px;
       background: var(--border);
-      border-radius: 100px;
       overflow: hidden;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.75rem;
     }
 
     .progress-bar-fill {
       height: 100%;
       background: var(--accent);
-      border-radius: 100px;
       width: 0%;
-      transition: width 0.4s ease;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .progress-steps { display: flex; flex-direction: column; gap: 0.55rem; }
+    .progress-steps { display: flex; flex-direction: column; gap: 0.5rem; }
 
     .progress-step {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      font-size: 0.78rem;
+      gap: 0.75rem;
+      font-size: 0.85rem;
       color: var(--text-3);
       transition: color 0.2s;
     }
 
-    .progress-step.active { color: var(--text); }
-    .progress-step.done   { color: var(--green); }
+    .progress-step.active { color: var(--text); font-weight: 500; }
+    .progress-step.done   { color: var(--text-2); }
+    .progress-step.done .step-icon { color: var(--green); }
 
     .step-icon {
       width: 16px;
@@ -912,14 +929,14 @@
     }
 
     .trades-table tbody tr:last-child { border-bottom: none; }
-    .trades-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+    .trades-table tbody tr:hover { background: rgba(10,14,26,0.03); }
 
     .trades-table tbody td {
       padding: 0.6rem 0.9rem;
-      color: var(--text-2);
+      color: var(--text);
       vertical-align: middle;
       white-space: nowrap;
-      font-weight: 300;
+      font-weight: 400;
     }
 
     .trade-type-buy   { color: var(--green); font-weight: 600; }
@@ -999,7 +1016,23 @@
       margin-bottom: 2.5rem;
       padding-bottom: 3rem;
       border-bottom: 1px solid var(--border-2);
+      position: relative;
     }
+    /* Bicentra-inspired geometric mark — three thin cobalt rings behind the score */
+    .brief-hero-grid::after {
+      content: '';
+      position: absolute;
+      right: -20px; top: -60px;
+      width: 260px; height: 90px;
+      background:
+        radial-gradient(circle at 46px 45px,  transparent 34px, rgba(30,50,220,0.10) 34px 35px, transparent 35px),
+        radial-gradient(circle at 130px 45px, transparent 34px, rgba(30,50,220,0.10) 34px 35px, transparent 35px),
+        radial-gradient(circle at 214px 45px, transparent 34px, rgba(30,50,220,0.10) 34px 35px, transparent 35px);
+      pointer-events: none;
+      z-index: -1;
+      opacity: 0.85;
+    }
+    @media (max-width: 720px) { .brief-hero-grid::after { display: none; } }
 
     .brief-company {
       font-family: var(--font-display);
@@ -1059,10 +1092,29 @@
       width: 8px; height: 8px; border-radius: 50%;
       background: var(--text-3);
       position: relative;
+      animation: briefDotPulse 2.4s ease-in-out infinite;
     }
     .brief-score-dot.positive { background: var(--green); box-shadow: 0 0 0 4px rgba(22,163,74,0.14); }
     .brief-score-dot.negative { background: var(--red);   box-shadow: 0 0 0 4px rgba(220,38,38,0.14); }
     .brief-score-dot.neutral  { background: var(--amber); box-shadow: 0 0 0 4px rgba(217,119,6,0.14); }
+    .brief-score-dot::after {
+      content: ''; position: absolute; inset: -4px;
+      border-radius: 50%; border: 1px solid currentColor;
+      opacity: 0; animation: briefDotRing 2.4s ease-out infinite;
+      pointer-events: none;
+    }
+    .brief-score.positive .brief-score-dot::after { color: var(--green); }
+    .brief-score.negative .brief-score-dot::after { color: var(--red); }
+    .brief-score.neutral  .brief-score-dot::after { color: var(--amber); }
+    @keyframes briefDotPulse {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.15); }
+    }
+    @keyframes briefDotRing {
+      0%   { transform: scale(1);   opacity: 0.55; }
+      70%  { transform: scale(2.2); opacity: 0; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
     .brief-score.positive #d-score-word { color: var(--green); }
     .brief-score.negative #d-score-word { color: var(--red); }
     .brief-score.neutral  #d-score-word { color: var(--amber); }
@@ -1131,6 +1183,16 @@
       color: var(--text);
       max-width: 640px;
     }
+    .brief-signal-section .brief-lead::first-letter {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 3.5em;
+      float: left;
+      line-height: 0.85;
+      margin: 0.05em 0.1em 0 -0.02em;
+      color: var(--accent);
+      letter-spacing: -0.04em;
+    }
     .brief-lead em {
       font-style: italic;
       color: var(--accent);
@@ -1154,8 +1216,19 @@
       width: 60px; height: 22px;
     }
     .brief-sparkline svg { width: 100%; height: 100%; overflow: visible; }
-    .brief-sparkline path { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-    .brief-sparkline circle { fill: currentColor; }
+    .brief-sparkline path {
+      fill: none; stroke: currentColor; stroke-width: 1.5;
+      stroke-linecap: round; stroke-linejoin: round;
+      stroke-dasharray: var(--dash, 200);
+      stroke-dashoffset: var(--dash, 200);
+      animation: briefSparkDraw 1.2s ease-out 0.4s forwards;
+    }
+    .brief-sparkline circle {
+      fill: currentColor; opacity: 0;
+      animation: briefSparkDot 0.4s ease-out 1.5s forwards;
+    }
+    @keyframes briefSparkDraw { to { stroke-dashoffset: 0; } }
+    @keyframes briefSparkDot  { to { opacity: 1; } }
 
     /* ─── Management — pull quote + tone ─────────────────────────── */
     .brief-management-grid {
@@ -2234,6 +2307,7 @@ function fmtScore(n) {
 }
 
 // Tiny inline sparkline SVG from a list of scores in [-1, 1].
+// Path length is computed so the draw-in animation is smooth at any width.
 function sparklineSVG(scores) {
   const n = scores.length;
   if (n < 2) return '';
@@ -2243,9 +2317,15 @@ function sparklineSVG(scores) {
     const y = pad + ((1 - (s + 1) / 2)) * (h - pad*2);
     return [pad + i * stepX, y];
   });
+  // Approximate polyline length for stroke-dasharray sizing.
+  let len = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const dx = pts[i][0] - pts[i-1][0], dy = pts[i][1] - pts[i-1][1];
+    len += Math.sqrt(dx*dx + dy*dy);
+  }
   const d = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
   const [lx, ly] = pts[pts.length - 1];
-  return `<span class="brief-sparkline"><svg viewBox="0 0 ${w} ${h}"><path d="${d}"/><circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="2"/></svg></span>`;
+  return `<span class="brief-sparkline" style="--dash:${Math.ceil(len)}"><svg viewBox="0 0 ${w} ${h}"><path d="${d}"/><circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="2"/></svg></span>`;
 }
 
 // Pick the strongest quote for the pull-quote treatment.
@@ -2314,30 +2394,48 @@ function buildPriceChart(prices, filingIdx) {
   const canvas = $('priceChart');
   const ctx    = canvas.getContext('2d');
 
-  const grad = ctx.createLinearGradient(0, 0, 0, 220);
-  grad.addColorStop(0, 'rgba(30,50,220,0.12)');
-  grad.addColorStop(1, 'rgba(30,50,220,0)');
-
+  // FT-style hairline — no gradient fill. Filing marker is a compact pill
+  // attached to the price at the filing date, not a full vertical line.
   const filingLinePlugin = {
     id: 'filingLine',
     afterDraw(chart) {
       if (filingIdx == null || filingIdx < 0) return;
       const meta = chart.getDatasetMeta(0);
-      if (!meta.data[filingIdx]) return;
-      const x = meta.data[filingIdx].x;
+      const pt   = meta.data[filingIdx];
+      if (!pt) return;
+      const { x, y } = pt;
       const { ctx: c, chartArea: { top, bottom } } = chart;
       c.save();
+      // Thin vertical rule
       c.beginPath();
       c.moveTo(x, top);
       c.lineTo(x, bottom);
-      c.strokeStyle = 'rgba(30,50,220,0.85)';
-      c.lineWidth   = 1.5;
-      c.setLineDash([4, 3]);
+      c.strokeStyle = 'rgba(10,14,26,0.14)';
+      c.lineWidth   = 1;
       c.stroke();
-      c.font      = '600 10px Inter, system-ui, sans-serif';
-      c.fillStyle = 'rgba(30,50,220,1)';
-      c.textAlign = 'center';
-      c.fillText('Filing', x, top + 12);
+      // Compact pill label attached to the price point
+      const label = 'FILED';
+      c.font      = '600 9px "JetBrains Mono", monospace';
+      const w = c.measureText(label).width + 12;
+      const h = 16;
+      const bx = x + 8, by = y - h / 2;
+      c.fillStyle = '#0A0E1A';
+      c.beginPath();
+      if (c.roundRect) c.roundRect(bx, by, w, h, 3);
+      else c.rect(bx, by, w, h);
+      c.fill();
+      c.fillStyle = '#F5F1EC';
+      c.textAlign = 'left';
+      c.textBaseline = 'middle';
+      c.fillText(label, bx + 6, by + h / 2 + 0.5);
+      // Small cobalt dot at the filing price
+      c.fillStyle = '#1E32DC';
+      c.beginPath();
+      c.arc(x, y, 3.5, 0, Math.PI * 2);
+      c.fill();
+      c.strokeStyle = '#F5F1EC';
+      c.lineWidth = 2;
+      c.stroke();
       c.restore();
     }
   };
@@ -2349,16 +2447,16 @@ function buildPriceChart(prices, filingIdx) {
       labels,
       datasets: [{
         data:                closes,
-        borderColor:         '#1E32DC',
-        backgroundColor:     grad,
-        fill:                true,
-        tension:             0.35,
+        borderColor:         '#0A0E1A',
+        backgroundColor:     'transparent',
+        fill:                false,
+        tension:             0,
         pointRadius:         0,
         pointHoverRadius:    5,
         pointHoverBackgroundColor: '#1E32DC',
-        pointHoverBorderColor:     '#FFFFFF',
+        pointHoverBorderColor:     '#F5F1EC',
         pointHoverBorderWidth:     2,
-        borderWidth:         2,
+        borderWidth:         1.25,
       }]
     },
     options: {
