@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EarningsAI — SEC Filing Intelligence</title>
+  <title>Earnings Analyzer — SEC Filing Intelligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <style>
     /* ─── Feature panels — Bicentra-inspired light theme ─────────────── */
     .d-actions{margin-top:14px}
@@ -41,7 +41,7 @@
     .diff-hint{color:var(--text-2);font-size:.9rem}
     .demo-note{font-size:.78rem;color:var(--text-2);margin-top:12px}
     .about-demo{margin-top:16px;text-align:left;max-width:560px;margin-left:auto;margin-right:auto}
-    .about-toggle{background:transparent;border:1px solid var(--border-2);color:var(--text-2);padding:7px 14px;border-radius:100px;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:7px}
+    .about-toggle{background:transparent;border:1px solid var(--border-2);color:var(--text-2);padding:7px 14px;border-radius:100px;font-family:var(--font-mono);font-style:italic;font-size:.95rem;font-weight:400;letter-spacing:0;text-transform:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:7px}
     .about-toggle:hover{color:var(--text);border-color:var(--text)}
     .about-toggle .about-icon{font-size:.85rem}
     .about-toggle[aria-expanded="true"]{color:var(--text);border-color:var(--text)}
@@ -49,9 +49,9 @@
     .about-panel[hidden]{display:none}
     .about-row{display:grid;grid-template-columns:110px 1fr;gap:16px;padding:10px 0;border-bottom:1px solid var(--border)}
     .about-row:last-child{border-bottom:0}
-    .about-k{font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--text-2);font-weight:700;padding-top:3px}
+    .about-k{font-family:var(--font-mono);font-style:italic;font-size:.95rem;letter-spacing:0;text-transform:none;color:var(--accent);font-weight:400;padding-top:2px}
     .about-v{color:var(--text)}
-    .about-v code{font-family:'JetBrains Mono',ui-monospace,monospace;background:var(--card-2);padding:2px 6px;border-radius:3px;font-size:.88em;color:var(--accent)}
+    .about-v code{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;background:var(--card-2);padding:2px 6px;border-radius:3px;font-size:.88em;color:var(--accent)}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -79,7 +79,8 @@
 
       --font-display: 'Manrope', system-ui, sans-serif;
       --font-body:    'Inter', system-ui, sans-serif;
-      --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+      --font-mono:    'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+      --font-editorial: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
       --radius:    4px;
       --radius-lg: 6px;
     }
@@ -158,10 +159,10 @@
       border-bottom: 1px solid var(--border-2);
       border-radius: 0;
       color: var(--text);
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
+      font-family: var(--font-body);
+      font-size: 0.88rem;
       font-weight: 500;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       padding: 0.4rem 0.25rem;
       outline: none;
@@ -169,11 +170,13 @@
     }
 
     .nav-search input::placeholder {
-      text-transform: uppercase;
-      font-weight: 500;
-      letter-spacing: 0.16em;
+      font-family: var(--font-mono);
+      font-style: italic;
+      text-transform: none;
+      font-weight: 400;
+      letter-spacing: 0;
       color: var(--text-3);
-      font-size: 0.68rem;
+      font-size: 0.95rem;
     }
 
     .nav-search input:focus { border-bottom-color: var(--accent); }
@@ -241,12 +244,13 @@
       position: relative;
     }
     .loading-card::before {
-      content: 'BRIEF';
+      content: 'Brief';
       position: absolute;
       top: 1.25rem; right: 1.5rem;
       font-family: var(--font-mono);
-      font-size: 0.62rem;
-      letter-spacing: 0.28em;
+      font-style: italic;
+      font-size: 1.15rem;
+      letter-spacing: 0;
       color: var(--accent);
     }
 
@@ -343,21 +347,23 @@
     }
 
     .hero-eyebrow {
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
+      font-family: var(--font-mono);
+      font-style: italic;
+      font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: 0;
+      text-transform: none;
       color: var(--accent);
       margin-bottom: 1.5rem;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.85rem;
     }
 
     .hero-eyebrow::before {
       content: '';
       display: block;
-      width: 32px;
+      width: 40px;
       height: 1px;
       background: var(--accent);
     }
@@ -398,10 +404,10 @@
       border: 1px solid var(--border-2);
       border-radius: 4px;
       color: var(--text);
-      font-family: var(--font-mono);
-      font-size: 0.9rem;
+      font-family: var(--font-body);
+      font-size: 1rem;
       font-weight: 500;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       padding: 0.85rem 1.1rem;
       outline: none;
@@ -409,11 +415,13 @@
     }
 
     .hero-input::placeholder {
-      text-transform: uppercase;
-      font-weight: 500;
-      letter-spacing: 0.16em;
+      font-family: var(--font-mono);
+      font-style: italic;
+      text-transform: none;
+      font-weight: 400;
+      letter-spacing: 0;
       color: var(--text-3);
-      font-size: 0.78rem;
+      font-size: 1.05rem;
     }
 
     .hero-input:focus {
@@ -450,11 +458,11 @@
       background: transparent;
       border: 1px solid var(--border-2);
       border-radius: 100px;
-      padding: 0.35rem 0.9rem;
+      padding: 0.35rem 0.95rem;
       font-family: var(--font-mono);
-      font-size: 0.7rem;
-      font-weight: 500;
-      letter-spacing: 0.1em;
+      font-size: 0.98rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
       text-transform: uppercase;
       color: var(--text);
       cursor: pointer;
@@ -495,11 +503,12 @@
 
     .feature-num {
       font-family: var(--font-mono);
-      font-weight: 500;
-      font-size: 0.7rem;
-      letter-spacing: 0.18em;
+      font-weight: 400;
+      font-size: 1.15rem;
+      letter-spacing: 0.02em;
       color: var(--accent);
       margin-bottom: 1.5rem;
+      font-variant-numeric: oldstyle-nums;
     }
 
     .feature-icon {
@@ -1003,13 +1012,14 @@
       display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
     }
     .brief-eyebrow {
-      display: flex; align-items: center; gap: 12px;
+      display: flex; align-items: center; gap: 14px;
       font-family: var(--font-mono);
-      font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
+      font-style: italic;
+      font-size: 1.05rem; letter-spacing: 0; text-transform: none;
       color: var(--accent);
     }
     .brief-eyebrow-rule {
-      display: inline-block; width: 32px; height: 1px; background: var(--accent);
+      display: inline-block; width: 40px; height: 1px; background: var(--accent);
     }
 
     .brief-hero-grid {
@@ -1049,9 +1059,9 @@
     }
     .brief-ticker {
       font-family: var(--font-mono);
-      font-weight: 500;
-      font-size: 0.82rem;
-      letter-spacing: 0.14em;
+      font-weight: 400;
+      font-size: 1.15rem;
+      letter-spacing: 0.08em;
       color: var(--accent);
       margin-bottom: 1rem;
     }
@@ -1080,12 +1090,13 @@
     }
     .brief-score-num {
       font-family: var(--font-mono);
-      font-weight: 500;
-      font-size: clamp(3rem, 7vw, 5rem);
+      font-weight: 400;
+      font-size: clamp(3.5rem, 8vw, 5.75rem);
       line-height: 1;
-      letter-spacing: -0.035em;
+      letter-spacing: -0.02em;
       color: var(--text);
       font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1, "lnum" 1;
       margin-bottom: 0.5rem;
     }
     .brief-score-label {
@@ -1128,9 +1139,11 @@
     .brief-score.neutral  #d-score-word { color: var(--amber); }
     .brief-score-scale {
       font-family: var(--font-mono);
-      font-size: 0.68rem; letter-spacing: 0.14em;
-      color: var(--text-2); opacity: 0.7;
-      text-transform: uppercase;
+      font-style: italic;
+      font-size: 0.95rem; letter-spacing: 0;
+      color: var(--text-2); opacity: 0.75;
+      text-transform: none;
+      font-variant-numeric: oldstyle-nums;
     }
 
     .brief-headline {
@@ -1157,11 +1170,12 @@
     .brief-section:first-of-type { border-top: 0; padding-top: 0; }
     .brief-section-num {
       font-family: var(--font-mono);
-      font-weight: 500;
-      font-size: 0.72rem;
-      letter-spacing: 0.2em;
+      font-weight: 400;
+      font-size: 1.15rem;
+      letter-spacing: 0.02em;
       color: var(--accent);
       padding-top: 6px;
+      font-variant-numeric: oldstyle-nums;
     }
     .brief-section-title {
       font-family: var(--font-display);
@@ -1175,11 +1189,12 @@
     }
     .brief-section-source, .brief-meta-source {
       font-family: var(--font-mono);
+      font-style: italic;
       font-weight: 400;
-      font-size: 0.65rem;
-      letter-spacing: 0.14em;
+      font-size: 0.98rem;
+      letter-spacing: 0;
       color: var(--text-2);
-      text-transform: uppercase;
+      text-transform: none;
     }
 
     /* ─── The Signal — editorial lead paragraph ──────────────────── */
@@ -1209,13 +1224,15 @@
     }
     .brief-lead strong {
       font-family: var(--font-mono);
-      font-weight: 500;
-      color: var(--text);
-      font-size: 0.95em;
-      padding: 1px 6px;
-      background: rgba(30,50,220,0.08);
-      border-radius: 3px;
+      font-weight: 400;
+      color: var(--accent);
+      font-size: 1.05em;
+      padding: 0;
+      background: transparent;
+      border: 0;
       font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1, "lnum" 1;
+      font-style: normal;
     }
     .brief-sparkline {
       display: inline-block;
@@ -1270,11 +1287,12 @@
     }
     .brief-tone-label {
       font-family: var(--font-mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
+      font-style: italic;
+      font-size: 0.98rem;
+      letter-spacing: 0;
+      text-transform: none;
       color: var(--accent);
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.85rem;
     }
     .brief-tone p {
       font-size: 1rem;
@@ -1284,11 +1302,12 @@
     }
     .brief-guidance-label {
       font-family: var(--font-mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
+      font-style: italic;
+      font-size: 0.98rem;
+      letter-spacing: 0;
+      text-transform: none;
       color: var(--text-2);
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.85rem;
     }
     .brief-guidance ul { list-style: none; padding: 0; margin: 0; }
     .brief-guidance li {
@@ -1323,9 +1342,10 @@
     @media (max-width: 720px) { .brief-vs-side:first-child { border-right: 0; border-bottom: 1px solid var(--border-2); } }
     .brief-vs-label {
       font-family: var(--font-mono);
-      font-size: 0.62rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
+      font-style: italic;
+      font-size: 0.95rem;
+      letter-spacing: 0;
+      text-transform: none;
       color: var(--text-2);
       margin-bottom: 0.9rem;
     }
@@ -1356,9 +1376,10 @@
     }
     .brief-market-window {
       font-family: var(--font-mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
+      font-style: italic;
+      font-size: 0.95rem;
+      letter-spacing: 0;
+      text-transform: none;
       color: var(--text-2);
       margin-top: 1rem;
     }
@@ -1442,8 +1463,8 @@
       color: var(--text);
     }
     .brief-loading-inline {
-      font-family: var(--font-mono); font-size: 0.72rem;
-      letter-spacing: 0.14em; text-transform: uppercase;
+      font-family: var(--font-mono); font-style: italic; font-size: 0.95rem;
+      letter-spacing: 0; text-transform: none;
       color: var(--text-2);
     }
 
@@ -1451,8 +1472,8 @@
     .brief-share-btn {
       display: inline-flex; align-items: center; gap: 10px;
       background: var(--text); color: #F5F1EC;
-      border: 0; padding: 7px 12px; border-radius: 4px;
-      font-family: var(--font-body); font-size: 0.75rem; font-weight: 500;
+      border: 0; padding: 8px 14px; border-radius: 4px;
+      font-family: var(--font-mono); font-style: italic; font-size: 0.95rem; font-weight: 400;
       cursor: pointer;
       transition: background 0.15s, transform 0.05s;
       line-height: 1.2;
@@ -1462,13 +1483,19 @@
     .brief-share-btn.copied { background: var(--green); animation: briefCopyPulse 0.4s ease; }
     @keyframes briefCopyPulse { 0% { transform: scale(1); } 40% { transform: scale(1.04); } 100% { transform: scale(1); } }
     .brief-share-url {
-      font-family: var(--font-mono); font-size: 0.7rem;
-      letter-spacing: 0.02em; opacity: 0.7;
-      max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-family: var(--font-mono);
+      font-style: italic;
+      font-size: 0.9rem;
+      letter-spacing: 0; opacity: 0.8;
+      max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .brief-share-label {
-      font-weight: 600; letter-spacing: 0.04em; font-size: 0.72rem;
-      text-transform: uppercase;
+      font-family: var(--font-mono);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 0.95rem;
+      letter-spacing: 0;
+      text-transform: none;
     }
     .brief-share-btn-ghost {
       background: transparent; color: var(--text);
@@ -1489,9 +1516,9 @@
     }
     .brief-byline-attribution {
       font-family: var(--font-mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
+      font-style: italic;
+      font-size: 0.95rem;
+      letter-spacing: 0;
       color: var(--text-2);
       display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
     }
@@ -1515,7 +1542,7 @@
 <!-- ── Nav ───────────────────────────────────────────────────────────────── -->
 <nav>
   <div class="nav-logo">
-    Earnings<span class="accent">AI</span>
+    Earnings<span class="accent"> Analyzer</span>
   </div>
 
   <div class="nav-search">
@@ -1554,12 +1581,12 @@
   <!-- Hero -->
   <div class="hero-section">
     <div class="hero-content">
-      <div class="hero-eyebrow">SEC Filing Intelligence</div>
+      <div class="hero-eyebrow">The Filing Brief</div>
 
       <h1 class="hero-headline">
-        Earnings<br>
-        <span class="line-2">Intelligence.</span><br>
-        Powered by AI.
+        Every SEC filing,<br>
+        <span class="line-2">decoded</span><br>
+        into one brief.
       </h1>
 
       <p class="hero-sub">
@@ -2435,7 +2462,7 @@ function buildPriceChart(prices, filingIdx) {
       c.stroke();
       // Compact pill label attached to the price point
       const label = 'FILED';
-      c.font      = '600 9px "JetBrains Mono", monospace';
+      c.font      = '600 9px "Inter", system-ui, sans-serif';
       const w = c.measureText(label).width + 12;
       const h = 16;
       const bx = x + 8, by = y - h / 2;
