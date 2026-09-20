@@ -562,7 +562,8 @@
     }
     .hero-chip:hover {
       border-color: var(--text);
-      background: #fff;
+      background: var(--text);
+      color: #F5F1EC;
     }
     .hero-chip-text {
       display: inline-block;
@@ -576,7 +577,10 @@
       width: auto;
       max-width: 60px;
       opacity: 0;
-      filter: brightness(0);  /* flatten any colored source to solid black */
+      /* Flatten any colored source to solid white so it reads on the
+         dark hover background. brightness(0) collapses all channels
+         to black; invert(1) then flips that black to white. */
+      filter: brightness(0) invert(1);
       pointer-events: none;
       transition: opacity 0.22s ease, transform 0.22s ease;
     }
