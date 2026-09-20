@@ -1427,6 +1427,10 @@
     .brief-score.positive #d-score-word { color: var(--green); }
     .brief-score.negative #d-score-word { color: var(--red); }
     .brief-score.neutral  #d-score-word { color: var(--amber); }
+    /* Score number takes on the sentiment color directly */
+    .brief-score.positive .brief-score-num { color: var(--green); }
+    .brief-score.negative .brief-score-num { color: var(--red); }
+    .brief-score.neutral  .brief-score-num { color: var(--amber); }
     .brief-score-scale {
       font-family: var(--font-mono);
       font-style: italic;
@@ -2071,7 +2075,8 @@
         <div class="brief-name">
           <h1 class="brief-company" id="d-name"></h1>
           <div class="brief-ticker" id="d-ticker"></div>
-          <div class="brief-meta">
+          <!-- 10-Q pill + date row moved into the eyebrow above; hidden shells kept for JS compat -->
+          <div class="brief-meta" hidden>
             <span id="d-form-tag"></span>
             <span class="brief-meta-dot">·</span>
             <span id="d-date"></span>
@@ -2080,7 +2085,8 @@
 
         <div class="brief-score" id="d-score-block">
           <div class="brief-score-num" id="d-score-num">0.00</div>
-          <div class="brief-score-label" id="d-score-lbl">
+          <!-- "Positive" text label removed — the score number itself carries the color now -->
+          <div class="brief-score-label" id="d-score-lbl" hidden>
             <span class="brief-score-dot" id="d-score-dot"></span>
             <span id="d-score-word">Neutral</span>
           </div>
@@ -2161,17 +2167,12 @@
       <div id="price-stats-row"></div><div id="price-chart-wrap"></div>
     </div>
 
-    <!-- ─── 05 · The Evidence (progressive disclosure) ───────────── -->
+    <!-- ─── 05 · Evidence (always expanded) ───────────────────── -->
     <section class="brief-section brief-evidence-section">
       <div class="brief-section-num" id="d-evidence-num">04</div>
       <div class="brief-section-body">
-        <button class="brief-evidence-toggle" type="button"
-                aria-expanded="false" aria-controls="evidence-body"
-                onclick="toggleEvidence()">
-          <span class="brief-section-title">The Evidence</span>
-          <span class="brief-evidence-caret">↓</span>
-        </button>
-        <div class="brief-evidence-body" id="evidence-body" hidden>
+        <div class="brief-section-title">Evidence</div>
+        <div class="brief-evidence-body" id="evidence-body">
           <div class="brief-evidence-grid">
             <div class="brief-evidence-col">
               <div class="brief-tone-label">Key Themes</div>
@@ -2536,7 +2537,7 @@ function renderDashboard(a) {
   const sentiment = a.sentiment || 'neutral';
 
   // ── Hero ─────────────────────────────────────────────────────────
-  $('d-eyebrow-text').textContent = `Filing Brief · ${a.form || '10-Q'} · ${a.date || ''}`;
+  $('d-eyebrow-text').textContent = `${fiscalQuarter(a.date)} · ${formatBriefDate(a.date)}`;
   $('d-name').textContent   = a.company_name || a.ticker;
   $('d-ticker').textContent = a.ticker || '';
   $('d-form-tag').textContent = a.form || '—';
@@ -2651,6 +2652,19 @@ function formatBriefDate(iso) {
   if (!m) return iso;
   const d = new Date(+m[1], +m[2] - 1, +m[3]);
   return d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+}
+
+// Fiscal-quarter-of-reporting-period for a filing date.
+// 10-Q filings are typically filed ~30-45 days after quarter close, so we
+// back up ~2 months from the filing date and use the calendar quarter of the
+// resulting month. Returns "Q1"–"Q4".
+function fiscalQuarter(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return '';
+  let month = +m[2] - 2;
+  if (month <= 0) month += 12;
+  const q = Math.floor((month - 1) / 3) + 1;
+  return `Q${q}`;
 }
 
 // Compose a single opinionated sentence for the hero.
@@ -2778,8 +2792,11 @@ function animateCountUp(el, target) {
 
 // Progressive disclosure for the Evidence section.
 function toggleEvidence() {
+  // Retained as a no-op: Evidence is always expanded now, but the function
+  // is kept so any stale bindings on cached pages don't error.
   const btn  = document.querySelector('.brief-evidence-toggle');
   const body = $('evidence-body');
+  if (!btn || !body) return;
   const open = btn.getAttribute('aria-expanded') === 'true';
   btn.setAttribute('aria-expanded', String(!open));
   if (open) body.setAttribute('hidden', ''); else body.removeAttribute('hidden');
