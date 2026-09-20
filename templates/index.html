@@ -346,9 +346,9 @@
     .hero-section {
       min-height: calc(100vh - 60px);
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      padding: 5rem 2rem 6rem;
+      padding: 3rem 2rem 5rem;
       max-width: 1200px;
       margin: 0 auto;
       text-align: center;
@@ -374,7 +374,7 @@
       font-style: italic;
       font-size: 0.95rem;
       text-decoration: none;
-      margin-bottom: 2.5rem;
+      margin-bottom: 1.75rem;
       transition: border-color 0.2s, background 0.2s, transform 0.15s;
     }
     .hero-pill:hover { border-color: var(--accent); background: #fff; transform: translateY(-1px); }
@@ -396,7 +396,7 @@
       line-height: 1.03;
       letter-spacing: -0.035em;
       color: var(--text);
-      margin: 0 auto 1.75rem;
+      margin: 0 auto 1.25rem;
       max-width: 1040px;
     }
 
@@ -419,7 +419,7 @@
       font-size: 1.15rem;
       color: var(--text-2);
       line-height: 1.55;
-      margin: 0 auto 2.75rem;
+      margin: 0 auto 2rem;
       max-width: 580px;
       font-weight: 400;
     }
@@ -431,7 +431,7 @@
       justify-content: center;
       flex-wrap: wrap;
       gap: 1rem;
-      margin-bottom: 2.5rem;
+      margin-bottom: 1.75rem;
     }
 
     .hero-search-row {
@@ -560,49 +560,40 @@
       color: #F5F1EC;
     }
 
-    /* ── Scroll cue at bottom of hero ─────────────────────────── */
+    /* ── Scroll cue at bottom of hero — animated arrow ────────── */
     .hero-scroll {
       position: absolute;
       left: 50%;
-      bottom: 2.5rem;
+      bottom: 2rem;
       transform: translateX(-50%);
       display: inline-flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       text-decoration: none;
       color: var(--text-2);
       opacity: 0.75;
       transition: opacity 0.2s;
     }
     .hero-scroll:hover { opacity: 1; color: var(--text); }
+    .hero-scroll:hover .hero-scroll-arrow { color: var(--accent); }
     .hero-scroll-label {
       font-family: var(--font-mono);
       font-style: italic;
       font-size: 0.95rem;
       letter-spacing: 0.02em;
     }
-    .hero-scroll-line {
-      position: relative;
-      width: 1px;
-      height: 46px;
-      background: currentColor;
-      opacity: 0.35;
-      overflow: hidden;
+    .hero-scroll-arrow {
+      width: 20px; height: 20px;
+      color: currentColor;
+      animation: heroScrollArrow 1.6s cubic-bezier(.55,0,.45,1) infinite;
+      transition: color 0.2s;
     }
-    .hero-scroll-dot {
-      position: absolute;
-      left: -1px; top: -12px;
-      width: 3px; height: 12px;
-      background: var(--accent);
-      border-radius: 100px;
-      animation: heroScrollDot 1.8s cubic-bezier(.4,0,.2,1) infinite;
-    }
-    @keyframes heroScrollDot {
-      0%   { transform: translateY(0);   opacity: 0; }
-      15%  { opacity: 1; }
-      70%  { opacity: 1; }
-      100% { transform: translateY(58px); opacity: 0; }
+    @keyframes heroScrollArrow {
+      0%   { transform: translateY(-3px); opacity: 0;   }
+      25%  { opacity: 1; }
+      60%  { transform: translateY(4px);  opacity: 1;   }
+      100% { transform: translateY(9px);  opacity: 0;   }
     }
     .hero-section { position: relative; }
 
@@ -1886,7 +1877,7 @@
       </a>
 
       <h1 class="hero-headline">
-        Every SEC filing,<br>
+        Every <span class="line-2">SEC</span> filing,<br>
         <span class="line-nowrap">decoded into one <span class="line-2">brief.</span></span>
       </h1>
 
@@ -1929,7 +1920,9 @@
     <!-- Scroll cue at the bottom of the hero -->
     <a class="hero-scroll" href="#peek" aria-label="Scroll to preview">
       <span class="hero-scroll-label">Scroll</span>
-      <span class="hero-scroll-line"><span class="hero-scroll-dot"></span></span>
+      <svg class="hero-scroll-arrow" viewBox="0 0 20 20" aria-hidden="true">
+        <path d="M4 8 L10 14 L16 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </a>
   </div>
 
