@@ -560,6 +560,86 @@
       color: #F5F1EC;
     }
 
+    /* ── Scroll cue at bottom of hero ─────────────────────────── */
+    .hero-scroll {
+      position: absolute;
+      left: 50%;
+      bottom: 2.5rem;
+      transform: translateX(-50%);
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-2);
+      opacity: 0.75;
+      transition: opacity 0.2s;
+    }
+    .hero-scroll:hover { opacity: 1; color: var(--text); }
+    .hero-scroll-label {
+      font-family: var(--font-mono);
+      font-style: italic;
+      font-size: 0.95rem;
+      letter-spacing: 0.02em;
+    }
+    .hero-scroll-line {
+      position: relative;
+      width: 1px;
+      height: 46px;
+      background: currentColor;
+      opacity: 0.35;
+      overflow: hidden;
+    }
+    .hero-scroll-dot {
+      position: absolute;
+      left: -1px; top: -12px;
+      width: 3px; height: 12px;
+      background: var(--accent);
+      border-radius: 100px;
+      animation: heroScrollDot 1.8s cubic-bezier(.4,0,.2,1) infinite;
+    }
+    @keyframes heroScrollDot {
+      0%   { transform: translateY(0);   opacity: 0; }
+      15%  { opacity: 1; }
+      70%  { opacity: 1; }
+      100% { transform: translateY(58px); opacity: 0; }
+    }
+    .hero-section { position: relative; }
+
+    /* ── Compact footer strip under the hero ──────────────────── */
+    .hero-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 1rem 2rem 0;
+      max-width: 900px;
+      margin: -1rem auto 0;
+      font-family: var(--font-mono);
+      font-style: italic;
+      font-size: 0.92rem;
+      color: var(--text-2);
+      text-align: center;
+    }
+    .hero-footer-demo a {
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border-2);
+      transition: border-color 0.15s;
+    }
+    .hero-footer-demo a:hover { border-bottom-color: var(--accent); }
+    .hero-footer-dot { opacity: 0.4; }
+
+    .about-demo-inline { margin-top: 0; display: inline-block; }
+    .about-demo-inline .about-panel {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      margin-top: 12px;
+      max-width: 560px; width: min(560px, calc(100vw - 4rem));
+      z-index: 20;
+    }
+    .about-demo-inline { position: relative; }
+
     /* ── Peek Preview — mini Filing Brief mock ────────────────── */
     .peek-wrap {
       max-width: 900px;
@@ -1811,10 +1891,8 @@
       </h1>
 
       <p class="hero-sub">
-        Point it at a ticker. It reads the last four 10-Q and 8-K filings,
-        the earnings call transcript when one exists, and hands back a
-        one-page editorial brief — sentiment, tone, management quotes,
-        and the market's response — in under 30 seconds.
+        Enter a ticker. It reads the last four SEC filings and the earnings call,
+        then writes a one-page brief. About 30 seconds.
       </p>
 
       <div class="hero-cta-row">
@@ -1846,20 +1924,30 @@
         <div class="hero-chip" onclick="quickSearch('TSLA')">TSLA</div>
         <div class="hero-chip" onclick="quickSearch('JPM')">JPM</div>
       </div>
+    </div>
 
-      {% if demo_tickers %}
-      <div class="demo-note">
-        Demo limited to {{ demo_tickers|join(' · ') }}.
-        <a href="https://github.com/chulkara/earnings-analyzer" style="color:inherit">Clone the repo</a>
-        to run any ticker.
-      </div>
-      {% endif %}
+    <!-- Scroll cue at the bottom of the hero -->
+    <a class="hero-scroll" href="#peek" aria-label="Scroll to preview">
+      <span class="hero-scroll-label">Scroll</span>
+      <span class="hero-scroll-line"><span class="hero-scroll-dot"></span></span>
+    </a>
+  </div>
 
-      <div class="about-demo">
-        <button class="about-toggle" type="button" onclick="toggleAboutDemo()" aria-expanded="false" aria-controls="about-panel">
-          <span class="about-icon">ⓘ</span> About this demo
-        </button>
-        <div id="about-panel" class="about-panel" hidden>
+  <!-- Compact footer strip for demo constraints + About toggle -->
+  <div class="hero-footer">
+    {% if demo_tickers %}
+    <span class="hero-footer-demo">
+      Demo limited to {{ demo_tickers|join(' · ') }}.
+      <a href="https://github.com/chulkara/earnings-analyzer">Clone the repo</a>
+      to run any ticker.
+    </span>
+    {% endif %}
+    <span class="hero-footer-dot">·</span>
+    <div class="about-demo about-demo-inline">
+      <button class="about-toggle" type="button" onclick="toggleAboutDemo()" aria-expanded="false" aria-controls="about-panel">
+        <span class="about-icon">ⓘ</span> About this demo
+      </button>
+      <div id="about-panel" class="about-panel" hidden>
           <div class="about-row">
             <span class="about-k">Hosting</span>
             <span class="about-v">Render free tier (compute) + Turso free tier (storage). Runs at $0/mo.</span>
@@ -1882,11 +1970,10 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </div><!-- /hero-footer -->
 
   <!-- Peek Preview — a mini Filing Brief that hints at the product -->
-  <div class="peek-wrap">
+  <div class="peek-wrap" id="peek">
     <div class="peek-frame">
       <div class="peek-titlebar">
         <span class="peek-dot r"></span><span class="peek-dot y"></span><span class="peek-dot g"></span>
