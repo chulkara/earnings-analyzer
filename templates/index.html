@@ -540,10 +540,13 @@
     }
 
     .hero-chip {
+      position: relative;
       background: transparent;
       border: 1px solid var(--border);
       border-radius: 100px;
-      padding: 0.35rem 0.9rem;
+      padding: 0 0.95rem;
+      min-width: 80px;
+      height: 34px;
       font-family: var(--font-body);
       font-size: 0.78rem;
       font-weight: 600;
@@ -551,13 +554,39 @@
       text-transform: uppercase;
       color: var(--text);
       cursor: pointer;
-      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: border-color 0.2s, background 0.2s;
     }
-
     .hero-chip:hover {
       border-color: var(--text);
-      background: var(--text);
-      color: #F5F1EC;
+      background: #fff;
+    }
+    .hero-chip-text {
+      display: inline-block;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+    .hero-chip-logo {
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%) scale(0.85);
+      height: 16px;
+      width: auto;
+      max-width: 60px;
+      opacity: 0;
+      filter: brightness(0);  /* flatten any colored source to solid black */
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+    .hero-chip:hover .hero-chip-text {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+    .hero-chip:hover .hero-chip-logo {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
     }
 
     /* ── Scroll cue at bottom of hero — animated arrow ────────── */
@@ -1913,11 +1942,26 @@
 
       <div class="hero-chips" id="hero-chips">
         <span class="hero-chips-label">or try</span>
-        <div class="hero-chip" onclick="quickSearch('AAPL')">AAPL</div>
-        <div class="hero-chip" onclick="quickSearch('MSFT')">MSFT</div>
-        <div class="hero-chip" onclick="quickSearch('NVDA')">NVDA</div>
-        <div class="hero-chip" onclick="quickSearch('TSLA')">TSLA</div>
-        <div class="hero-chip" onclick="quickSearch('JPM')">JPM</div>
+        <div class="hero-chip" onclick="quickSearch('AAPL')">
+          <span class="hero-chip-text">AAPL</span>
+          <img class="hero-chip-logo" src="/static/logos/aapl.svg" alt="" aria-hidden="true" onerror="this.style.display='none'">
+        </div>
+        <div class="hero-chip" onclick="quickSearch('MSFT')">
+          <span class="hero-chip-text">MSFT</span>
+          <img class="hero-chip-logo" src="/static/logos/msft.svg" alt="" aria-hidden="true" onerror="this.style.display='none'">
+        </div>
+        <div class="hero-chip" onclick="quickSearch('NVDA')">
+          <span class="hero-chip-text">NVDA</span>
+          <img class="hero-chip-logo" src="/static/logos/nvda.svg" alt="" aria-hidden="true" onerror="this.style.display='none'">
+        </div>
+        <div class="hero-chip" onclick="quickSearch('TSLA')">
+          <span class="hero-chip-text">TSLA</span>
+          <img class="hero-chip-logo" src="/static/logos/tsla.svg" alt="" aria-hidden="true" onerror="this.style.display='none'">
+        </div>
+        <div class="hero-chip" onclick="quickSearch('JPM')">
+          <span class="hero-chip-text">JPM</span>
+          <img class="hero-chip-logo" src="/static/logos/jpm.svg" alt="" aria-hidden="true" onerror="this.style.display='none'">
+        </div>
       </div>
     </div>
 
