@@ -573,16 +573,18 @@
       position: absolute;
       left: 50%; top: 50%;
       transform: translate(-50%, -50%) scale(0.85);
-      height: 16px;
-      width: auto;
-      max-width: 60px;
+      display: block;
+      width: 46px;
+      height: 20px;
       opacity: 0;
-      /* Flatten any colored source to solid white so it reads on the
-         dark hover background. brightness(0) collapses all channels
-         to black; invert(1) then flips that black to white. */
-      filter: brightness(0) invert(1);
       pointer-events: none;
       transition: opacity 0.22s ease, transform 0.22s ease;
+      /* The mask references the SVG by URL and uses its alpha channel
+         to cut a shape; background paints the shape. This avoids
+         browser-<img> decode quirks with Photoshop-exported SVG. */
+      background: #F5F1EC;
+      -webkit-mask: var(--logo) center / contain no-repeat;
+              mask: var(--logo) center / contain no-repeat;
     }
     .hero-chip:hover .hero-chip-text {
       opacity: 0;
@@ -1948,23 +1950,23 @@
         <span class="hero-chips-label">or try</span>
         <div class="hero-chip" onclick="quickSearch('AAPL')">
           <span class="hero-chip-text">AAPL</span>
-          <img class="hero-chip-logo" src="/static/logos/aapl.svg" alt="" aria-hidden="true" onerror="this.style.display='none'">
+          <span class="hero-chip-logo" style="--logo:url('/static/logos/aapl.svg')" aria-hidden="true"></span>
         </div>
         <div class="hero-chip" onclick="quickSearch('MSFT')">
           <span class="hero-chip-text">MSFT</span>
-          <img class="hero-chip-logo" src="/static/logos/msft.svg" alt="" aria-hidden="true" onerror="this.style.display='none'">
+          <span class="hero-chip-logo" style="--logo:url('/static/logos/msft.svg')" aria-hidden="true"></span>
         </div>
         <div class="hero-chip" onclick="quickSearch('NVDA')">
           <span class="hero-chip-text">NVDA</span>
-          <img class="hero-chip-logo" src="/static/logos/nvda.svg" alt="" aria-hidden="true" onerror="this.style.display='none'">
+          <span class="hero-chip-logo" style="--logo:url('/static/logos/nvda.svg')" aria-hidden="true"></span>
         </div>
         <div class="hero-chip" onclick="quickSearch('TSLA')">
           <span class="hero-chip-text">TSLA</span>
-          <img class="hero-chip-logo" src="/static/logos/tsla.svg" alt="" aria-hidden="true" onerror="this.style.display='none'">
+          <span class="hero-chip-logo" style="--logo:url('/static/logos/tsla.svg')" aria-hidden="true"></span>
         </div>
         <div class="hero-chip" onclick="quickSearch('JPM')">
           <span class="hero-chip-text">JPM</span>
-          <img class="hero-chip-logo" src="/static/logos/jpm.svg" alt="" aria-hidden="true" onerror="this.style.display='none'">
+          <span class="hero-chip-logo" style="--logo:url('/static/logos/jpm.svg')" aria-hidden="true"></span>
         </div>
       </div>
     </div>
