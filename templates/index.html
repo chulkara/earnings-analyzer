@@ -384,12 +384,12 @@
     .hero-headline {
       font-family: var(--font-display);
       font-weight: 800;
-      font-size: clamp(2.75rem, 6.5vw, 5rem);
-      line-height: 1.02;
+      font-size: clamp(2.25rem, 5.5vw, 4.5rem);
+      line-height: 1.03;
       letter-spacing: -0.035em;
       color: var(--text);
       margin: 0 auto 1.75rem;
-      max-width: 780px;
+      max-width: 1040px;
     }
 
     .hero-headline .line-2 {
@@ -398,6 +398,13 @@
       font-weight: 400;
       color: var(--accent);
       letter-spacing: -0.01em;
+    }
+
+    /* Keep "decoded into one brief." on a single line at all sizes we care about;
+       let it wrap naturally only on very narrow phones. */
+    .hero-headline .line-nowrap { white-space: nowrap; }
+    @media (max-width: 560px) {
+      .hero-headline .line-nowrap { white-space: normal; }
     }
 
     .hero-sub {
@@ -1793,8 +1800,8 @@
       </a>
 
       <h1 class="hero-headline">
-        Every SEC filing, decoded<br>
-        into one <span class="line-2">brief.</span>
+        Every SEC filing,<br>
+        <span class="line-nowrap">decoded into one <span class="line-2">brief.</span></span>
       </h1>
 
       <p class="hero-sub">
