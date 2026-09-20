@@ -574,17 +574,20 @@
       left: 50%; top: 50%;
       transform: translate(-50%, -50%) scale(0.85);
       display: block;
-      width: 46px;
+      /* Container is wide enough to fit a wordmark; height matches the
+         chip's inner space. Mask sizing (below) normalizes the shape
+         itself so every logo renders at the same optical height. */
+      width: 64px;
       height: 20px;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.22s ease, transform 0.22s ease;
-      /* The mask references the SVG by URL and uses its alpha channel
-         to cut a shape; background paints the shape. This avoids
-         browser-<img> decode quirks with Photoshop-exported SVG. */
       background: #F5F1EC;
-      -webkit-mask: var(--logo) center / contain no-repeat;
-              mask: var(--logo) center / contain no-repeat;
+      /* mask-size: `auto 12px` locks every logo to 12px tall, letting
+         width flex with the source aspect ratio. `center` centers on
+         both axes — no per-ticker overrides needed. */
+      -webkit-mask: var(--logo) center / auto 12px no-repeat;
+              mask: var(--logo) center / auto 12px no-repeat;
     }
     .hero-chip:hover .hero-chip-text {
       opacity: 0;
