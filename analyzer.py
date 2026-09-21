@@ -235,6 +235,69 @@ def _parse_json_response(raw: str) -> dict:
         raise ValueError(f"Model returned an unexpected format. Preview: {clean[:200]!r}")
 
 
+def market_reaction_sentiment(ticker: str, form: str, date: str) -> dict:
+    """
+    Historical 'sentiment' derived from the stock's price move in the 30 trading
+    days after the filing. No LLM call — fast, free, and arguably more honest
+    than an AI's read of a filing: it's what the market actually did.
+
+    Returns the same shape as quick_sentiment_analysis so the frontend chart
+    doesn't have to care which source produced the score.
+    """
+    try:
+        import yfinance as yf
+        from datetime import datetime, timedelta
+
+        filing_dt = datetime.strptime(date, "%Y-%m-%d").date()
+        start = filing_dt - timedelta(days=5)
+        end   = filing_dt + timedelta(days=45)
+
+        hist = yf.Ticker(ticker).history(
+            start=start.isoformat(), end=end.isoformat(), auto_adjust=True
+        )
+        if hist.empty:
+            return {"date": date, "form": form,
+                    "sentiment": "neutral", "sentiment_score": 0.0,
+                    "summary": "No price data available for this filing date."}
+
+        # First trading day on/after the filing date → price at filing
+        hist.index = hist.index.tz_localize(None)
+        dates = [d.date().isoformat() for d in hist.index]
+        filing_iso = filing_dt.isoformat()
+        start_idx = next((i for i, d in enumerate(dates) if d >= filing_iso), None)
+        if start_idx is None:
+            return {"date": date, "form": form,
+                    "sentiment": "neutral", "sentiment_score": 0.0,
+                    "summary": "Filing date is beyond available market data."}
+
+        end_idx = min(len(hist) - 1, start_idx + 30)
+        p0 = float(hist["Close"].iloc[start_idx])
+        p1 = float(hist["Close"].iloc[end_idx])
+        pct = ((p1 - p0) / p0) * 100 if p0 else 0.0
+
+        # Map % change to a bounded sentiment_score in [-1, 1]
+        # ±10% swing = ±1.0; smaller swings scale linearly
+        score = max(-1.0, min(1.0, pct / 10.0))
+        if score >= 0.2:
+            label = "positive"
+        elif score <= -0.2:
+            label = "negative"
+        else:
+            label = "neutral"
+
+        arrow = "up" if pct >= 0 else "down"
+        return {
+            "date": date, "form": form,
+            "sentiment": label, "sentiment_score": round(score, 3),
+            "summary": f"Stock {arrow} {abs(pct):.1f}% in the 30 trading days after filing.",
+        }
+    except Exception as e:
+        print(f"[market_reaction] {ticker} {date}: {e}", flush=True)
+        return {"date": date, "form": form,
+                "sentiment": "neutral", "sentiment_score": 0.0,
+                "summary": "Market reaction unavailable."}
+
+
 def quick_sentiment_analysis(content: str, ticker: str, form: str, date: str,
                               groq_key: str) -> dict:
     """Fast sentiment for older filings. Cached by (content, prompt_version, model)."""
@@ -355,8 +418,8 @@ def analyze_all_filings(ticker: str, groq_key: str, progress=None) -> dict:
     cik, company_name = get_cik_for_ticker(ticker)
     progress(f"Found {company_name} — fetching recent filings...")
 
-    # 2. Get metadata for the most recent filing only (faster demo path)
-    filing_infos, _ = get_multiple_filing_infos(cik, count=1)
+    # 2. Get metadata for last 4 filings (latest gets full LLM; history uses price)
+    filing_infos, _ = get_multiple_filing_infos(cik, count=4)
     total = len(filing_infos)
 
     # 3. Download text for each filing (cached where possible)
@@ -390,9 +453,9 @@ def analyze_all_filings(ticker: str, groq_key: str, progress=None) -> dict:
 
     older = filings_with_text[1:]
     for i, filing in enumerate(older):
-        progress(f"Scoring historical filing {i + 1} of {len(older)}...")
-        hist_entry = quick_sentiment_analysis(
-            filing["content"], ticker, filing["form"], filing["date"], groq_key
+        progress(f"Market reaction for filing {i + 1} of {len(older)}...")
+        hist_entry = market_reaction_sentiment(
+            ticker, filing["form"], filing["date"]
         )
         history.append(hist_entry)
 
