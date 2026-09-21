@@ -138,7 +138,7 @@ def analyze():
 def stream(job_id):
     def generate():
         seen = 0
-        deadline = time.time() + 180
+        deadline = time.time() + 300
         while time.time() < deadline:
             job = _jobs.get(job_id)
             if not job:
@@ -157,7 +157,7 @@ def stream(job_id):
                 _jobs.pop(job_id, None)
                 return
             time.sleep(0.25)
-        yield f"data: {json.dumps({'type': 'error', 'message': 'Analysis timed out.'})}\n\n"
+        yield f"data: {json.dumps({'type': 'error', 'message': 'Analysis timed out after 5 minutes. Groq may be slow — try again in a bit.'})}\n\n"
 
     return Response(
         stream_with_context(generate()),

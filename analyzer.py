@@ -355,8 +355,8 @@ def analyze_all_filings(ticker: str, groq_key: str, progress=None) -> dict:
     cik, company_name = get_cik_for_ticker(ticker)
     progress(f"Found {company_name} — fetching recent filings...")
 
-    # 2. Get metadata for last 4 filings
-    filing_infos, _ = get_multiple_filing_infos(cik, count=4)
+    # 2. Get metadata for the most recent filing only (faster demo path)
+    filing_infos, _ = get_multiple_filing_infos(cik, count=1)
     total = len(filing_infos)
 
     # 3. Download text for each filing (cached where possible)
