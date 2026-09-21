@@ -50,7 +50,7 @@ def _parse_one_form4(cik: str, accession: str, primary_doc: str, filing_date: st
         # that serves a styled HTML page — strip it to reach the raw XML.
         doc = primary_doc.split("/")[-1] if "/" in primary_doc else primary_doc
         url = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{acc}/{doc}"
-        resp = requests.get(url, headers=EDGAR_HEADERS, timeout=10)
+        resp = requests.get(url, headers=EDGAR_HEADERS, timeout=6)
         if resp.status_code != 200:
             return []
 
@@ -105,7 +105,7 @@ def _parse_one_form4(cik: str, accession: str, primary_doc: str, filing_date: st
         return []
 
 
-def get_insider_trades(cik: str, max_filings: int = 20) -> list:
+def get_insider_trades(cik: str, max_filings: int = 12) -> list:
     """
     Fetches the most recent Form 4 filings for a company and returns all
     parsed transactions sorted newest-first.
@@ -171,8 +171,8 @@ def get_insider_trades(cik: str, max_filings: int = 20) -> list:
 
 _CACHE_TTL      = 3600        # seconds – per-ticker results cache
 _FD_CACHE_TTL   = 86400       # seconds – FD index cache (daily)
-_MAX_PTRS       = 100         # how many recent PTRs to scan per query
-_PTR_WORKERS    = 20          # parallel PDF downloads
+_MAX_PTRS       = 30          # how many recent PTRs to scan per query
+_PTR_WORKERS    = 12          # parallel PDF downloads (cap for free-tier CPU)
 
 _fd_index_cache: dict = {"ptrs": None, "ts": 0.0}   # list[dict]
 _ticker_cache:   dict = {}                            # ticker → (list, timestamp)
@@ -206,7 +206,7 @@ def _fetch_fd_index() -> list:
     for year in (current_year, current_year - 1):
         url = f"https://disclosures-clerk.house.gov/public_disc/financial-pdfs/{year}FD.zip"
         try:
-            resp = requests.get(url, timeout=30)
+            resp = requests.get(url, timeout=20)
             if resp.status_code != 200:
                 continue
             with zipfile.ZipFile(io.BytesIO(resp.content)) as z:
@@ -254,7 +254,7 @@ def _scan_ptr_for_ticker(ptr: dict, ticker: str) -> list:
         year   = ptr["year"]
         url    = (f"https://disclosures-clerk.house.gov"
                   f"/public_disc/ptr-pdfs/{year}/{doc_id}.pdf")
-        resp   = requests.get(url, timeout=12)
+        resp   = requests.get(url, timeout=8)
         if resp.status_code != 200:
             return []
 
@@ -328,3 +328,22 @@ def get_congressional_trades(ticker: str) -> list:
 
     _ticker_cache[ticker] = (result, time.time())
     return result
+
+
+# ── Startup warmup ──────────────────────────────────────────────────────────
+
+def warmup_congressional_index() -> None:
+    """
+    Fetch the FD zip index in a background thread on app startup so the first
+    user request doesn't pay the 20-40s cold cost. Silent on failure — if the
+    warmup can't reach the House Clerk site, the first user just experiences
+    a slower load.
+    """
+    import threading
+    def _run():
+        try:
+            _fetch_fd_index()
+            print("[warmup] FD index preloaded", flush=True)
+        except Exception as e:
+            print(f"[warmup] FD index preload failed: {e}", flush=True)
+    threading.Thread(target=_run, daemon=True).start()

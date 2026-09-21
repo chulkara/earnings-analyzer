@@ -29,7 +29,11 @@ from flask import (
 from dotenv import load_dotenv
 
 from analyzer import analyze_all_filings, get_cik_for_ticker
-from data_sources import get_insider_trades, get_congressional_trades
+from data_sources import (
+    get_insider_trades,
+    get_congressional_trades,
+    warmup_congressional_index,
+)
 from cache import get_cache
 from diff import diff_analyses
 
@@ -39,6 +43,10 @@ app = Flask(__name__)
 
 # In-memory job store — SSE state, not the source of truth
 _jobs: dict = {}
+
+# Fire and forget: preload the House Clerk FD index in the background so the
+# first user's /trades request doesn't pay the ~20-40s cold cost.
+warmup_congressional_index()
 
 
 # ─── Demo whitelist ─────────────────────────────────────────────────────────
@@ -208,12 +216,12 @@ def trades(ticker):
         insider_fut  = pool.submit(get_insider_trades, cik)
         congress_fut = pool.submit(get_congressional_trades, ticker)
         try:
-            insider_trades = insider_fut.result(timeout=30)
+            insider_trades = insider_fut.result(timeout=20)
         except Exception as e:
             print(f"[trades] insider FAILED: {e}", flush=True)
             traceback.print_exc()
         try:
-            congress_trades = congress_fut.result(timeout=60)
+            congress_trades = congress_fut.result(timeout=25)
         except Exception as e:
             print(f"[trades] congressional FAILED: {e}", flush=True)
             traceback.print_exc()
