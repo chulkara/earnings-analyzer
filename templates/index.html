@@ -143,7 +143,48 @@
     body.has-results .nav-logo:hover { opacity: 1; }
     .nav-logo:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 3px; }
 
-    .nav-logo .accent { color: var(--accent); }
+    .nav-logo .accent {
+      color: var(--accent);
+      font-family: var(--font-editorial);
+      font-style: italic;
+      font-weight: 500;
+      font-size: 1.32em;
+      letter-spacing: -0.01em;
+      margin-left: 0.18em;
+      line-height: 1;
+    }
+
+    /* Logo + info icon + their popovers */
+    .nav-brand { position: relative; display: flex; align-items: center; gap: 0.55rem; }
+    .nav-info {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 1.5px solid var(--accent); background: transparent; color: var(--accent);
+      font-family: var(--font-editorial); font-style: italic; font-weight: 600; font-size: 13px; line-height: 1;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; padding: 0; transition: background .15s, color .15s;
+    }
+    .nav-info:hover, .nav-info[aria-expanded="true"] { background: var(--accent); color: #fff; }
+    .nav-pop {
+      position: absolute; top: calc(100% + 14px); left: 0; z-index: 120;
+      width: min(360px, calc(100vw - 2rem));
+      background: #fff; border: 1px solid var(--border-2); border-radius: 10px;
+      box-shadow: 0 24px 60px -24px rgba(10,14,26,.25);
+      padding: 18px 18px 16px; text-align: left;
+    }
+    .nav-pop[hidden] { display: none; }
+    .nav-pop.wide { width: min(520px, calc(100vw - 2rem)); }
+    .pop-h {
+      font-family: var(--font-editorial); font-style: italic; font-size: 1rem;
+      color: var(--accent); margin-bottom: 10px;
+    }
+    .pop-h + * { margin-top: 0; }
+    .pop-sec + .pop-sec { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .swatches { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+    .swatch { display: flex; align-items: center; gap: 9px; font-size: .8rem; line-height: 1.25; color: var(--text); }
+    .swatch i { width: 22px; height: 22px; border-radius: 5px; border: 1px solid var(--border-2); flex-shrink: 0; }
+    .swatch small { display: block; color: var(--text-2); font-family: ui-monospace, Menlo, monospace; font-size: .72rem; letter-spacing: .02em; }
+    .fontrow { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 5px 0; font-size: .8rem; color: var(--text-2); }
+    .fontrow b { color: var(--text); font-size: 1.05rem; font-weight: 600; }
 
     .nav-search {
       flex: 1;
@@ -346,9 +387,9 @@
     .hero-section {
       min-height: calc(100vh - 60px);
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: center;
-      padding: 3rem 2rem 5rem;
+      padding: 0 2rem 5.5rem;
       max-width: 1200px;
       margin: 0 auto;
       text-align: center;
@@ -421,6 +462,7 @@
       line-height: 1.55;
       margin: 0 auto 2rem;
       max-width: 580px;
+      text-wrap: balance;
       font-weight: 400;
     }
 
@@ -585,9 +627,15 @@
       background: #F5F1EC;
       /* mask-size: `auto 12px` locks every logo to 12px tall, letting
          width flex with the source aspect ratio. `center` centers on
-         both axes — no per-ticker overrides needed. */
+         both axes. Per-ticker overrides live below. */
       -webkit-mask: var(--logo) center / auto 12px no-repeat;
               mask: var(--logo) center / auto 12px no-repeat;
+    }
+    /* AAPL reads compact at 12px (it's an icon rather than a wordmark)
+       so nudge it up a couple pixels to match perceived weight. */
+    .hero-chip:nth-of-type(1) .hero-chip-logo {
+      -webkit-mask-size: auto 14px;
+              mask-size: auto 14px;
     }
     .hero-chip:hover .hero-chip-text {
       opacity: 0;
@@ -597,6 +645,18 @@
       opacity: 1;
       transform: translate(-50%, -50%) scale(1);
     }
+    /* "Random" chip: dashed outline, text stays visible on hover */
+    .hero-chip.random { border-style: dashed; border-color: var(--border-2); color: var(--accent); }
+    .hero-chip.random:hover { background: var(--accent); border-color: var(--accent); border-style: solid; color: #fff; }
+    .hero-chip.random:hover .hero-chip-text { opacity: 1; transform: none; }
+
+    /* Demo note under the ticker chips */
+    .hero-demo {
+      font-family: var(--font-editorial); font-style: italic; font-size: 1rem;
+      color: var(--accent); margin: -0.6rem auto 0;
+    }
+    .hero-demo a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(30,50,220,.35); }
+    .hero-demo a:hover { border-bottom-color: var(--accent); }
 
     /* ── Scroll cue at bottom of hero — animated arrow ────────── */
     .hero-scroll {
@@ -1873,9 +1933,62 @@
 
 <!-- ── Nav ───────────────────────────────────────────────────────────────── -->
 <nav>
-  <button class="nav-logo" onclick="backToHome()" aria-label="Back to home">
-    Earnings<span class="accent"> Analyzer</span>
-  </button>
+  <div class="nav-brand">
+    <button class="nav-logo" id="navLogo" onclick="logoClick(event)" aria-label="Earnings Analyzer: style guide" aria-expanded="false" aria-controls="stylePop">
+      Earnings<span class="accent">Analyzer</span>
+    </button>
+    <button class="nav-info" id="navInfo" onclick="togglePop('infoPop', event)" aria-label="About this demo" aria-expanded="false" aria-controls="infoPop">i</button>
+
+    <div class="nav-pop" id="stylePop" role="dialog" aria-label="Colors and fonts" hidden>
+      <div class="pop-sec">
+        <div class="pop-h">Colors</div>
+        <div class="swatches">
+          <div class="swatch"><i style="background:#F5F1EC"></i><span>Cream<small>#F5F1EC</small></span></div>
+          <div class="swatch"><i style="background:#FFFFFF"></i><span>White<small>#FFFFFF</small></span></div>
+          <div class="swatch"><i style="background:#FAF6F0"></i><span>Soft cream<small>#FAF6F0</small></span></div>
+          <div class="swatch"><i style="background:#0A0E1A"></i><span>Ink<small>#0A0E1A</small></span></div>
+          <div class="swatch"><i style="background:#5B6270"></i><span>Gray<small>#5B6270</small></span></div>
+          <div class="swatch"><i style="background:#A0A5B0"></i><span>Light gray<small>#A0A5B0</small></span></div>
+          <div class="swatch"><i style="background:#1E32DC"></i><span>Cobalt<small>#1E32DC</small></span></div>
+          <div class="swatch"><i style="background:#4E64F0"></i><span>Cobalt light<small>#4E64F0</small></span></div>
+          <div class="swatch"><i style="background:#0E1F9C"></i><span>Cobalt deep<small>#0E1F9C</small></span></div>
+          <div class="swatch"><i style="background:#16A34A"></i><span>Positive<small>#16A34A</small></span></div>
+          <div class="swatch"><i style="background:#D97706"></i><span>Neutral<small>#D97706</small></span></div>
+          <div class="swatch"><i style="background:#DC2626"></i><span>Negative<small>#DC2626</small></span></div>
+        </div>
+      </div>
+      <div class="pop-sec">
+        <div class="pop-h">Fonts</div>
+        <div class="fontrow"><b style="font-family:'Manrope',sans-serif;font-weight:800">Manrope</b><span>Headlines</span></div>
+        <div class="fontrow"><b style="font-family:'Inter',sans-serif">Inter</b><span>Body text</span></div>
+        <div class="fontrow"><b style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500">Cormorant Garamond</b><span>Accents and labels</span></div>
+      </div>
+    </div>
+
+    <div class="nav-pop wide" id="infoPop" role="dialog" aria-label="About this demo" hidden>
+      <div class="pop-h">About this demo</div>
+          <div class="about-row">
+            <span class="about-k">Hosting</span>
+            <span class="about-v">Render free tier (compute) + Turso free tier (storage). Runs at $0/mo.</span>
+          </div>
+          <div class="about-row">
+            <span class="about-k">Cold start</span>
+            <span class="about-v">Render's free tier sleeps after 15 quiet minutes. A cron job pings the site every 10 minutes, so it stays awake and loads right away.</span>
+          </div>
+          <div class="about-row">
+            <span class="about-k">Permalinks</span>
+            <span class="about-v">Every analysis is stored in Turso, so shareable links survive the container sleeping and every redeploy. Old runs load in under a second.</span>
+          </div>
+          <div class="about-row">
+            <span class="about-k">Cost cap</span>
+            <span class="about-v">Analysis is limited to 5 tickers so nobody can run up the LLM bill. Clone the repo and set your own <code>GROQ_API_KEY</code> to analyze anything.</span>
+          </div>
+          <div class="about-row">
+            <span class="about-k">Trade-off</span>
+            <span class="about-v">A free keep-alive ping instead of a paid always-on instance. Same instant load, still $0. It's a portfolio demo, not a production app.</span>
+          </div>
+    </div>
+  </div>
 
   <div class="nav-search">
     <input
@@ -1912,20 +2025,14 @@
   <div class="hero-section">
     <div class="hero-content">
 
-      <!-- Announcement pill (small, top-of-hero) -->
-      <a class="hero-pill" href="https://chulkara.com/earnings-ai/" target="_blank" rel="noopener">
-        <span class="hero-pill-dot"></span>
-        The Filing Brief · Fall 2026
-      </a>
-
       <h1 class="hero-headline">
         Every <span class="line-2">SEC</span> filing,<br>
-        <span class="line-nowrap">decoded into one <span class="line-2">brief.</span></span>
+        <span class="line-nowrap">decoded <span class="line-2">into</span> one <span class="line-2">brief.</span></span>
       </h1>
 
       <p class="hero-sub">
         Enter a ticker. It reads the last four SEC filings and the earnings call,
-        then writes a one-page brief. About 30 seconds.
+        then writes a one-page brief in about 30 seconds.
       </p>
 
       <div class="hero-cta-row">
@@ -1971,7 +2078,17 @@
           <span class="hero-chip-text">JPM</span>
           <span class="hero-chip-logo" style="--logo:url('/static/logos/jpm.svg')" aria-hidden="true"></span>
         </div>
+        <div class="hero-chip random" onclick="randomSearch()" title="Pick a random ticker">
+          <span class="hero-chip-text">Random</span>
+        </div>
       </div>
+      {% if demo_tickers %}
+      <p class="hero-demo">
+        Demo limited to {{ demo_tickers|join(' · ') }}.
+        <a href="https://github.com/chulkara/earnings-analyzer" target="_blank" rel="noopener">Clone the repo</a>
+        to run any ticker.
+      </p>
+      {% endif %}
     </div>
 
     <!-- Scroll cue at the bottom of the hero -->
@@ -1983,44 +2100,7 @@
     </a>
   </div>
 
-  <!-- Compact footer strip for demo constraints + About toggle -->
-  <div class="hero-footer">
-    {% if demo_tickers %}
-    <span class="hero-footer-demo">
-      Demo limited to {{ demo_tickers|join(' · ') }}.
-      <a href="https://github.com/chulkara/earnings-analyzer">Clone the repo</a>
-      to run any ticker.
-    </span>
-    {% endif %}
-    <span class="hero-footer-dot">·</span>
-    <div class="about-demo about-demo-inline">
-      <button class="about-toggle" type="button" onclick="toggleAboutDemo()" aria-expanded="false" aria-controls="about-panel">
-        <span class="about-icon">ⓘ</span> About this demo
-      </button>
-      <div id="about-panel" class="about-panel" hidden>
-          <div class="about-row">
-            <span class="about-k">Hosting</span>
-            <span class="about-v">Render free tier (compute) + Turso free tier (storage). Runs at $0/mo.</span>
-          </div>
-          <div class="about-row">
-            <span class="about-k">Cold start</span>
-            <span class="about-v">If nobody's used the site in 15+ minutes, Render puts the container to sleep. Your first request wakes it — expect ~1 minute of Render's loading screen. Every request after that is instant until the next quiet period.</span>
-          </div>
-          <div class="about-row">
-            <span class="about-k">Permalinks</span>
-            <span class="about-v">Every analysis is stored in Turso, so shareable links survive the container sleeping and every redeploy. Old runs load in under a second once the container's awake.</span>
-          </div>
-          <div class="about-row">
-            <span class="about-k">Cost cap</span>
-            <span class="about-v">Analysis is limited to 5 tickers so nobody can run up the LLM bill. Clone the repo and set your own <code>GROQ_API_KEY</code> to analyze anything.</span>
-          </div>
-          <div class="about-row">
-            <span class="about-k">Trade-off</span>
-            <span class="about-v">Paying ~$0.20/mo on Fly.io would eliminate the cold start entirely. Chose $0 with a slower first-visit over pennies with instant response — it's a portfolio demo, not a production app.</span>
-          </div>
-        </div>
-      </div>
-    </div><!-- /hero-footer -->
+
 
   <!-- Peek Preview — a mini Filing Brief that hints at the product -->
   <div class="peek-wrap" id="peek">
@@ -2328,6 +2408,35 @@ function heroSearch() {
   if (val) $('tickerInput').value = val;
   startAnalysis();
 }
+
+function randomSearch() {
+  const chips = [...document.querySelectorAll('#hero-chips .hero-chip:not(.random) .hero-chip-text')]
+    .map(el => el.textContent.trim());
+  if (!chips.length) return;
+  quickSearch(chips[Math.floor(Math.random() * chips.length)]);
+}
+
+/* Logo: on a brief, go back home. On the landing page, open the style guide. */
+function logoClick(e) {
+  if (document.body.classList.contains('has-results')) { closePops(); backToHome(); return; }
+  togglePop('stylePop', e);
+}
+function closePops(except) {
+  [['stylePop','navLogo'],['infoPop','navInfo']].forEach(([pop, btn]) => {
+    if (pop === except) return;
+    $(pop).hidden = true; $(btn).setAttribute('aria-expanded','false');
+  });
+}
+function togglePop(id, e) {
+  if (e) e.stopPropagation();
+  const pop = $(id), btn = $(id === 'stylePop' ? 'navLogo' : 'navInfo');
+  const open = pop.hidden;
+  closePops(id);
+  pop.hidden = !open;
+  btn.setAttribute('aria-expanded', String(open));
+}
+document.addEventListener('click', e => { if (!e.target.closest('.nav-brand')) closePops(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePops(); });
 
 function backToHome() {
   document.body.classList.remove('has-results');
