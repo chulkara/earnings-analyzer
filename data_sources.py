@@ -16,10 +16,7 @@ from datetime import datetime
 
 from pypdf import PdfReader
 
-EDGAR_HEADERS = {
-    "User-Agent": "EarningsAnalyzer contact@example.com",
-    "Accept-Encoding": "gzip, deflate",
-}
+from analyzer import EDGAR_HEADERS  # one shared SEC User-Agent
 
 # Human-readable labels for SEC Form 4 transaction codes
 TRANSACTION_CODES = {

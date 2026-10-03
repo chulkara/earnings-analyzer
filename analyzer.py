@@ -14,7 +14,9 @@ Flow:
 
 import html
 import json
+import os
 import re
+import time
 import requests
 from groq import Groq
 
@@ -22,11 +24,59 @@ from cache import get_cache
 import transcripts as transcripts_mod
 
 
-# SEC requires a User-Agent header on every request
+# SEC requires a descriptive User-Agent (app name + contact) on every request.
+# Generic/placeholder agents get throttled, so set SEC_USER_AGENT on the host,
+# e.g. "EarningsAnalyzer you@yourdomain.com".
 EDGAR_HEADERS = {
-    "User-Agent": "EarningsAnalyzer contact@example.com",
+    "User-Agent": os.getenv(
+        "SEC_USER_AGENT",
+        "EarningsAnalyzer github.com/chulkara/earnings-analyzer",
+    ),
     "Accept-Encoding": "gzip, deflate",
 }
+
+SEC_SLOW_MSG = "SEC EDGAR is responding slowly right now. Please try again in a minute."
+
+
+def sec_get(url: str, total: float = 20.0, retries: int = 1) -> requests.Response:
+    """
+    GET from SEC with a hard *total* deadline.
+
+    requests' own `timeout` only limits each socket read, so a server that
+    trickles bytes (which SEC does when it throttles) can stall a request
+    forever. This reads the body in chunks and gives up once `total` seconds
+    have passed, retrying once before raising a friendly ValueError.
+    """
+    last_err = None
+    for attempt in range(retries + 1):
+        start = time.monotonic()
+        try:
+            resp = requests.get(url, headers=EDGAR_HEADERS, timeout=(5, 8), stream=True)
+            chunks = []
+            for chunk in resp.iter_content(4096):
+                chunks.append(chunk)
+                if time.monotonic() - start > total:
+                    resp.close()
+                    raise TimeoutError(f"SEC read exceeded {total}s")
+            resp._content = b"".join(chunks)
+            resp._content_consumed = True
+            return resp
+        except (requests.RequestException, TimeoutError) as e:
+            last_err = e
+            print(f"SEC fetch attempt {attempt + 1} failed for {url}: {e}")
+            time.sleep(1)
+    raise ValueError(SEC_SLOW_MSG) from last_err
+
+
+# Demo tickers resolve without downloading SEC's 1 MB company list.
+KNOWN_CIKS = {
+    "AAPL": ("0000320193", "Apple Inc."),
+    "MSFT": ("0000789019", "MICROSOFT CORP"),
+    "NVDA": ("0001045810", "NVIDIA CORP"),
+    "TSLA": ("0001318605", "Tesla, Inc."),
+    "JPM":  ("0000019617", "JPMORGAN CHASE & CO"),
+}
+_ticker_map: dict = {}
 
 
 # ─── Model config ────────────────────────────────────────────────────────────
@@ -102,17 +152,20 @@ Include 3-5 key_themes, 2-4 key_quotes, 2-4 guidance items, 2-4 risks, and up to
 
 def get_cik_for_ticker(ticker: str) -> tuple:
     """Looks up a company's CIK number using SEC's master company list."""
-    response = requests.get(
-        "https://www.sec.gov/files/company_tickers.json",
-        headers=EDGAR_HEADERS, timeout=15
-    )
+    ticker_upper = ticker.upper()
+    if ticker_upper in KNOWN_CIKS:
+        return KNOWN_CIKS[ticker_upper]
+    if ticker_upper in _ticker_map:
+        return _ticker_map[ticker_upper]
+
+    response = sec_get("https://www.sec.gov/files/company_tickers.json")
     if response.status_code != 200:
         raise ValueError(f"Could not reach SEC EDGAR (status {response.status_code}).")
 
-    ticker_upper = ticker.upper()
     for entry in response.json().values():
-        if entry["ticker"].upper() == ticker_upper:
-            return str(entry["cik_str"]).zfill(10), entry["title"]
+        _ticker_map[entry["ticker"].upper()] = (str(entry["cik_str"]).zfill(10), entry["title"])
+    if ticker_upper in _ticker_map:
+        return _ticker_map[ticker_upper]
 
     raise ValueError(
         f"'{ticker}' not found in SEC EDGAR. "
@@ -125,7 +178,7 @@ def get_cik_for_ticker(ticker: str) -> tuple:
 def get_multiple_filing_infos(cik: str, count: int = 4) -> tuple:
     """Returns the last `count` distinct 8-K or 10-Q filings for a company."""
     url = f"https://data.sec.gov/submissions/CIK{cik}.json"
-    response = requests.get(url, headers=EDGAR_HEADERS, timeout=15)
+    response = sec_get(url)
     if response.status_code != 200:
         raise ValueError(f"Could not fetch filings (status {response.status_code}).")
 
@@ -192,7 +245,7 @@ def fetch_filing_text(cik: str, accession: str, primary_doc: str,
     cik_int = int(cik)
     url = f"https://www.sec.gov/Archives/edgar/data/{cik_int}/{acc_no_dashes}/{primary_doc}"
 
-    response = requests.get(url, headers=EDGAR_HEADERS, timeout=20)
+    response = sec_get(url, total=30)
     if response.status_code != 200:
         raise ValueError(f"Could not download filing (status {response.status_code}).")
 
